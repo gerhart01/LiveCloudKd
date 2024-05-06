@@ -78,7 +78,7 @@ BOOLEAN VidPatchPsGetCurrentProcess(PCHAR pBuffer, ULONG len)
 		return TRUE;
 	}
 
-	pSavedPsGetCurrentProcessFunction = ExAllocatePoolWithTag(NonPagedPool, SIZE_OF_ARCH_NEW_PS_FUNCTION, 'Hvmm');
+	pSavedPsGetCurrentProcessFunction = HvmmPoolAlloc(SIZE_OF_ARCH_NEW_PS_FUNCTION);
 
 	if (!pSavedPsGetCurrentProcessFunction) {
 		KDbgLog("ExAllocatePoolWithTag failed", Status);
@@ -193,9 +193,9 @@ BOOLEAN PatchVidIOCtlHandler()
 
 	EnumActivePartitionID();
 
-	pArrayofReg = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
-	pArrayofValues = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
-	pUnknown02 = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
+	pArrayofReg = HvmmPoolAlloc(PAGE_SIZE);
+	pArrayofValues = HvmmPoolAlloc(PAGE_SIZE);
+	pUnknown02 = HvmmPoolAlloc(PAGE_SIZE);
 
 	if ((pArrayofReg == NULL) | (pArrayofValues == NULL) | (pUnknown02 == NULL))
 	{

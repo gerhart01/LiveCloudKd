@@ -187,7 +187,7 @@ MB_HANDLE VidGetMbBlockIndex(PVM_PROCESS_CONTEXT pPartitionHandle, PMEMORY_BLOCK
 }
 
 //
-//Find Gpar block from PARTITION_HANDLE structure for specifica GPA Page
+// Find Gpar block from PARTITION_HANDLE structure for specifica GPA Page
 //
 
 PGPAR_OBJECT VidGetGparObjectForGpa(PVM_PROCESS_CONTEXT pPartitionHandle, UINT64 GPA)
@@ -226,8 +226,8 @@ PGPAR_OBJECT VidGetGparObjectForGpa(PVM_PROCESS_CONTEXT pPartitionHandle, UINT64
 		if (uElement != 0)
 		{
 			objGpar = (PGPAR_OBJECT)uElement;
-			KDbgLog("pGparElement->GpaIndexStart", objGpar->GpaIndexStart);
-			KDbgLog("pGparElement->GpaIndexEnd",objGpar->GpaIndexEnd);
+			KDbgLog16("pGparElement->GpaIndexStart", objGpar->GpaIndexStart);
+			KDbgLog16("pGparElement->GpaIndexEnd",objGpar->GpaIndexEnd);
 
 			if ((GPA >= objGpar->GpaIndexStart) && (GPA <= objGpar->GpaIndexEnd))
 			{
@@ -247,7 +247,7 @@ PGPAR_OBJECT VidGetGparObjectForGpa(PVM_PROCESS_CONTEXT pPartitionHandle, UINT64
 }
 
 //
-//Read memory block from Hyper-V container
+// Read memory block from Hyper-V container
 //
 
 BOOLEAN VidGetContainerMemoryBlock(PVM_PROCESS_CONTEXT pPartitionHandle, PCHAR pBuffer, ULONG len, ULONG64 GPA)
@@ -678,9 +678,9 @@ BOOLEAN VidHvMapGpaPages(PCHAR pBuffer, ULONG len)
     NTSTATUS Status;
     PUINT32 PageCount = (PUINT32)20;
 
-    Buffer = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
-    ArrayOfBuffers = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
-    pUnknownParam01 = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
+    Buffer = HvmmPoolAlloc(PAGE_SIZE);
+    ArrayOfBuffers = HvmmPoolAlloc(PAGE_SIZE);
+    pUnknownParam01 = HvmmPoolAlloc(PAGE_SIZE);
 
 	if (!Buffer || !ArrayOfBuffers || !pUnknownParam01) {
 		KDbgPrintString("ExAllocatePoolWithTag failed");
@@ -856,9 +856,9 @@ BOOLEAN VidReadVpRegisters(PCHAR pBuffer, ULONG len)
     NTSTATUS Status = 0;
     PREGISTER_VP_INFO pRegInfo;
     
-    pArrayofReg = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
-    pArrayofCount = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
-    pArrayOfResult = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
+	pArrayofReg = HvmmPoolAlloc(PAGE_SIZE);
+    pArrayofCount = HvmmPoolAlloc(PAGE_SIZE);
+    pArrayOfResult = HvmmPoolAlloc(PAGE_SIZE);
 
 	if (!pArrayofReg || !pArrayofCount || !pArrayOfResult) {
 		KDbgPrintString("ExAllocatePoolWithTag failed");
@@ -898,9 +898,9 @@ BOOLEAN VidWriteVpRegisters(PCHAR pBuffer, ULONG len)
 
 	//DbgBreakPoint();
 
-	pArrayofReg = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
-	pArrayofValues = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
-	pArrayOfResult = ExAllocatePoolWithTag(NonPagedPool, PAGE_SIZE, 'Hvmm');
+	pArrayofReg = HvmmPoolAlloc(PAGE_SIZE);
+	pArrayofValues = HvmmPoolAlloc(PAGE_SIZE);
+	pArrayOfResult = HvmmPoolAlloc(PAGE_SIZE);
 
 	if (!pArrayofReg || !pArrayofValues || !pArrayOfResult) {
 		KDbgPrintString("ExAllocatePoolWithTag failed");

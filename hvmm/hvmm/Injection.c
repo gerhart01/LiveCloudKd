@@ -513,9 +513,7 @@ InjCreateInjectionInfo(
 	}
 	else
 	{
-		CapturedInjectionInfo = ExAllocatePoolWithTag(NonPagedPoolNx,
-			sizeof(INJ_INJECTION_INFO),
-			INJ_MEMORY_TAG);
+		CapturedInjectionInfo = HvmmPoolAlloc(sizeof(INJ_INJECTION_INFO));
 
 		if (!CapturedInjectionInfo)
 		{

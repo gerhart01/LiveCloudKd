@@ -1,5 +1,5 @@
 ;
-; hvlckd.inf
+; hvmm.inf
 ;
 
 [Version]
@@ -9,6 +9,7 @@ ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
 Provider=%ManufacturerName%
 DriverVer=
 CatalogFile=hvmm.cat
+PnpLockdown=1
 
 [DestinationDirs]
 DefaultDestDir = 12
@@ -19,12 +20,8 @@ DefaultDestDir = 12
 
 [SourceDisksFiles]
 
-
-[Manufacturer]
+[DefaultInstall.NTamd64]
 %ManufacturerName%=Standard,NT$ARCH$
-
-[Standard.NT$ARCH$]
-
 
 [Strings]
 ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name

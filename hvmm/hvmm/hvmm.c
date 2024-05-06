@@ -12,6 +12,27 @@ NTSTATUS ReadWrite_IRPhandler(IN PDEVICE_OBJECT fdo, IN PIRP Irp);
 
 KSPIN_LOCK MySpinLock;
 
+#define HVMM_MEMORY_TAG 'mmvH'
+
+PVOID HvmmPoolAlloc(SIZE_T size)
+{
+	PVOID pPool = ExAllocatePoolZero(NonPagedPool, size, HVMM_MEMORY_TAG);
+	if (!pPool) {
+		KDbgPrintString("ExAllocatePoolZero failed");
+		return NULL;
+	}
+	RtlZeroMemory(pPool, size);
+	return pPool;
+}
+
+PVOID HvmmPoolFree(PVOID p)
+{
+	if (p)
+		ExFreePoolWithTag(p, HVMM_MEMORY_TAG);
+
+	return NULL;
+}
+
 NTSTATUS DriverEntry( IN PDRIVER_OBJECT DriverObject,
                       IN PUNICODE_STRING RegistryPath  )
 {

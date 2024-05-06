@@ -216,7 +216,6 @@ typedef struct _MEMORY_BLOCK_ARRAY {
 	PULONG64 ArrayStart; // Start point to block of pointers to MBlock structures
 } MEMORY_BLOCK_ARRAY, *PMEMORY_BLOCK_ARRAY;
 
-
 typedef struct _VM_PROCESS_CONTEXT {
 	CHAR cPrtnSignature[0x8];//Prtn signature
 	CHAR Unknown01[0xF];
@@ -230,14 +229,11 @@ typedef struct _VM_PROCESS_CONTEXT {
 	PMEMORY_BLOCK_ARRAY ArrayOfMblocks;//offset +0x1218, size 0x8
     CHAR Unknown05[0x300];
     PGPAR_BLOCK_HANDLE pGparBlockHandle; // offset +0x1520, size 0x8
-	//CHAR Unknown04[0x27C0];
 	CHAR Unknown06[0x1570];
 	PMEMORY_BLOCK_ARRAY ArrayOfMblocks20H1;//offset +0x2A98, size 0x8
 	CHAR Unknown07[0x300];
 	PGPAR_BLOCK_HANDLE pGparBlockHandle20H1; // offset +0x2DA0, size 0x8
-	//HANDLE hVmmemHandle; //offset +0x3ÑE8, size 0x8 P.S. 0x3CC8 for full VM partition
 	CHAR Unknown08[0xA8];
-	//HANDLE hVmmemHandle18356;//offset +0x3D98, size 0x8
 } VM_PROCESS_CONTEXT, *PVM_PROCESS_CONTEXT;
 
 typedef struct _EPROCESS_INTERNALS {
@@ -248,7 +244,7 @@ typedef struct _EPROCESS_INTERNALS {
 } EPROCESS_INTERNALS, *PEPROCESS_INTERNALS;
 
 //
-//vid.c
+// vid.c
 //
 BOOLEAN VidDisableProcessProtection(PEPROCESS eProcess);
 BOOLEAN VidEnableProcessProtection(PEPROCESS eProcess);
@@ -272,10 +268,17 @@ PGPAR_OBJECT VidGetGparObjectForGpa(PVM_PROCESS_CONTEXT pPartitionHandle, UINT64
 BOOLEAN VidGetContainerMemoryBlock(PVM_PROCESS_CONTEXT pPartitionHandle, PCHAR pBuffer, ULONG len, ULONG64 GPA);
 
 //
-//process.c
+// process.c
 //
 
 BOOLEAN VidInjectDllToVmwp(PCHAR pBuffer, ULONG len);
+
+//
+// hvmm.c
+//
+
+PVOID HvmmPoolAlloc(SIZE_T size);
+PVOID HvmmPoolFree(PVOID p);
 
 //AMD64.asm
 PVOID ArchPsGetCurrentProcess(); // modified version of PsGetCurrentProcess
@@ -283,11 +286,6 @@ VOID ArchmReplacePsGetCurrentProcess(PVOID, PVOID);
 VOID ArchInt3();
 VOID ArchNewPsGetCurrentProcess();
 PVOID ArchNewPsGetCurrentProcess02();
-
-//misc.c
-//void KDbgPrintString(PCSTR value);
-//void KDbgLog(PCSTR format, ...);
-//void KDbgLog16(PCSTR format, ...);
 
 NTSTATUS KeReadProcessMemory(PEPROCESS Process, PVOID SourceAddress, PVOID TargetAddress, SIZE_T Size);
 PVOID KernelGetProcAddress(PVOID ModuleBase, PCHAR pFunctionName);

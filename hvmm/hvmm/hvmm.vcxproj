@@ -72,6 +72,7 @@
     <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
     <ConfigurationType>Driver</ConfigurationType>
     <DriverType>WDM</DriverType>
+    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <TargetVersion>Windows10</TargetVersion>
@@ -146,15 +147,20 @@
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(OutDir)\hvmm.sys" "$(SolutionDir)files" /y</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <DriverSign>
+      <FileDigestAlgorithm>SHA512</FileDigestAlgorithm>
+    </DriverSign>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PostBuildEvent>
-      <Command>copy "$(OutDir)\hvmm.sys" "$(SolutionDir)files" /y</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <ClCompile>
-      <DisableSpecificWarnings>4714;4748;4201;4214;4152;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4714;4748;4201;4214;4152;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <Optimization>Full</Optimization>
     </ClCompile>
     <Link>
@@ -163,6 +169,9 @@
       <AdditionalDependencies>$(SolutionDir)hvmm\lib\Win1017666\winhvr.lib;$(DDK_LIB_PATH)\wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
+    <DriverSign>
+      <FileDigestAlgorithm>SHA512</FileDigestAlgorithm>
+    </DriverSign>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Inf Include="hvmm.inf" />
