@@ -8,7 +8,7 @@ It can be useful for debug Hyper-V VM with VBS and HVCI enabled.
 
 Working with guest Windows Server 2022 and Windows 11, including preview builds (on November 2022)
 
-For debugging you need to use Windows Server 2019 (August 2020 updates - Windows image name en_windows_server_2019_updated_aug_2020_x64_dvd_f4bab427.iso).
+For debugging you need to use Windows Server 2019 (with August 2020 updates - Windows image name en_windows_server_2019_updated_aug_2020_x64_dvd_f4bab427.iso).
 It is good to use VMware Workstation for itm but you can try use Hyper-V with Windows Server 2019 as guest OS and Windows 11 as nested guest OS.
 
 # VSM\VBS activating for securekernel debugging
@@ -40,7 +40,7 @@ LiveCloudKDExdi plugin in live debugging mode works with Hyper-V on Windows Serv
    regsvr32.exe ExdiKdSample.dll
    ```
    command
-5. Don't forget configure symbols path for WinDBG as usual:
+4. Don't forget configure symbols path for WinDBG as usual:
 
 ```
 mkdir C:\Symbols
@@ -50,36 +50,38 @@ setx /m _NT_SYMBOL_PATH SRV*C:\Symbols*https://msdl.microsoft.com/download/symbo
 
 # Start
 
-1. Start WinDBG with EXDi plugin: 
+1. Set "VSMScan"=dword:00000001 for securekernel scanning or "VSMScan"=dword:00000000 for ntoskrnl debugging (if it is needed) using RegParam.reg file
+2. Start LiveCloudKd with EXDi plugin: 
 
 ```
-windbg -d -v -kx exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
+LiveCloudKd /l /a 0 /n 0
 ```
+a - Action ID (Live kernel debugger)
+n - ID of virtual machine
 
-It automatically launches WinDBG with EXDi interface in live debugging mode using hvmm.sys driver.
+It automatically launches WinDBG with EXDi plugin in live debugging mode.
 
-2. You can see working WinDBG and separate logging windows:
+3. You can use WinDBG and see events in separate logging window:
 
 ![](./images/EXDI6.png)
 
-3. Also you can directly start WinDBG using command
+4. Also you can directly start WinDBG using command
 
 ```
 windbg.exe -d -v -kx exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
 ```
 
-but before you need create HKEY_LOCAL_MACHINE\SOFTWARE\LiveCloudKd\Parameters\VmId, type REG_DWORD and enter position number in LiveCloudKd list [0, 1, 2]. You can see that list, if you launch LiveCloudKd without parameters. If you launch 1 VM, that parameter will be 0.
+but before you need create registry key HKEY_LOCAL_MACHINE\SOFTWARE\LiveCloudKd\Parameters\VmId, type REG_DWORD and enter VM position number in LiveCloudKd list [0, 1, 2, ...]. You can see that list, if you launch LiveCloudKd without parameters. If you launch 1 VM, that parameter will be 0.
 
-You can use WinDBG Preview with EXDi plugin too. Some versions of WinDBG Preview has bug to auto starting EXDi plugin from command line, therefore it must be start manually. But latest versions (1.2402.24001.0) works without that errors.
+5. You can use EXDi plugin in WinDBG with modern UI too. Some versions of WinDBG Preview have bug to auto starting EXDi plugin from command line, therefore it must be start manually (through EXDi connection string). But latest versions (1.2402.24001.0) work without that errors.
 
-4. Create HKEY_LOCAL_MACHINE\SOFTWARE\LiveCloudKd\Parameters\VmId, type REG_DWORD and enter position number in LiveCloudKd list [0, 1, 2]. You can see that list, if you launch LiveCloudKd without parameters. If you launch 1 VM, that parameter will be 0.
-5. You can start WinDBG with modern UI, go to File-Start debugging-Attach to Kernel, open EXDi tab and paste string 
+6. Now you can start WinDBG with modern UI, then go to File-Start debugging-Attach to Kernel, open EXDi tab and paste string 
 
 ```
 CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
 ```
 
-or for latest versions you can create KernelConnect0213466621.debugTarget file in C:\Users\UserName\AppData\Local\DBG\Targets
+or for latest versions you need to create KernelConnect<some_number>.debugTarget file (for example KernelConnect0213466621.debugTarget) in C:\Users\UserName\AppData\Local\DBG\Targets
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -105,13 +107,10 @@ or for latest versions you can create KernelConnect0213466621.debugTarget file i
   </TargetOptions>
 </TargetConfig>
 ```
-and start EXDi plugin from Recent option of debugger
-or launch it from command line (on latest versions)
+and start EXDi plugin from "Recent" option of debugger or launch it from command line (on latest versions)
 ```
 DbgX.Shell.exe -v -kx exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
 ```
-
-to field.
 
 ![](./images/EXDI10.png)
 ![](./images/EXDI7.png)
@@ -121,7 +120,7 @@ to field.
 1 CPU for guest OS for live debugging is preferrable.
 Experimented multi-CPU debugging was added. For successfull debugging you need set Debug-Event Filters->Break instruction exception to Handle->Not Handle, and Execution->Output inside WinDBG. 
 
-Set breakpoint using "bp" command, press "Run", wait until breakpoint was triggered. You can set 0x1000 breakpoints now. It is software-like breakpoints and not limited. 
+Set breakpoint using "bp" command, press "Run", wait until breakpoint was triggered. You can set 0x1000 breakpoints now. It is software-like breakpoints and they are not limited. 
 Also you can use single step command.
 
 For debugging securekernel:
@@ -139,7 +138,7 @@ For debugging securekernel:
 bp securekernel!IumInvokeSecureService
 ```
 
-4. After bp was triggered, execute .reload command. In WinDBG Preview you need press Ctrl+Alt+V for enabling verbose mode (no chance to enable it from cmd line - Dbg.Shell.X doesn't get additional parameters, when it launching in EXDi mode).
+4. After bp was triggered, execute .reload command. In WinDBG with modern UI you need press Ctrl+Alt+V for enabling verbose mode (you can't to enable it from cmd line - Dbg.Shell.X doesn't get additional parameters, when it launching in EXDi mode).
 Search images load addresses in pattern:
 
 ```
@@ -163,15 +162,15 @@ Found DLL import descriptor for ext-ms-win-ntos-vmsvc-l1-1-0.dll, function addre
 .reload /f cng.sys=<module_base_address>
 ```
 
-You can load standard address space modules using same commands even you inside securekernel context
+6. You can load standard address space modules using same commands even you inside securekernel context
 
 ```
 .reload /f ntkrnlmp.exe=<module_base_address>
 ```
 
-6. Script idt_securekernel_parse_pykd.py inside archive for demo.
+7. Use script [securekernel_info_pykd.py](https://github.com/gerhart01/Hyper-V-scripts/blob/master/securekernel_info_pykd.py) for demo.
 
-You can see demo video on youtube:
+Also you can see demo video on youtube:
 
 1. Debugging Hyper-V Windows Server 2019 guest OS using LiveCloudKd EXDI plugin - https://youtu.be/_8rQwB-ESlk
 2. Microsoft Windows Server 2019 securekernel live debugging using WinDBG EXDi LiveCloudKd plugin - https://youtu.be/tRLQwsJQ-hU
@@ -179,22 +178,21 @@ You can see demo video on youtube:
 
 # Settings
 
-There are some settings can be configured through Windows Registry (see file RegParam.reg in distrib). Path HKEY_LOCAL_MACHINE\SOFTWARE\LiveCloudKd\Parameters. All params are dword, can be 0 or 1.
+There are some settings can be configured through Windows Registry (see file RegParam.reg in distributive). Path HKEY_LOCAL_MACHINE\SOFTWARE\LiveCloudKd\Parameters
 
 1. VSMScan - enable VSM scanning for guest OS
 2. UseDebugApiStopProcess parameter enables DebugActiveProcess\DebugActiveProcessStop functions
 
-
 # Remarks
 
-1. If you close debugger modules (WinDBG, or output windows, or corresponding dllhost.exe process) VM can be in suspended state. 
-	For resuming it without reset start LiveCloudKd with /p option, select VM from list and then select 
+1. If you close debugger or his part (WinDBG, output windows, or corresponding dllhost.exe process), virtual machine can stay in the suspended state. 
+	For resuming it without reset, start LiveCloudKd with /p option, select VM from list and then select 
 	
 ```
 	4 - Resume partition.
 ```
 	
-NtSuspendProcess and NtResumeProcess are using for manage of state vmwp.exe process. It is not need for Windows Server 2019 (stopping of virtual cpus is enough), but need for Windows 10 host OS (because of difference in CPU scheduler). If something wrong, process can be resuming using Process Explorer from SysinternalsSuite. Recommend to use Windows Server 2019
+NtSuspendProcess and NtResumeProcess are using for manage of state vmwp.exe process. It is not need for Windows Server 2019 (stopping of virtual cpus is enough), but need for Windows 10 host OS (because of difference in CPU scheduler). If something wrong, process can be resuming using Process Explorer from Sysinternals Suite. I recommend to use Windows Server 2019
 	
 2. Securekernel debugging in EXDi mode is unexplored feature, there are many problems can be triggered in debugging process, so first make test (you can see example on early mentioned video):
 
@@ -210,12 +208,12 @@ bp securekernel!IumAllocateSystemHeap "r rcx;g"
 ```
 command
 
-3. Sometimes (not often) WinDBG can suddenly break in random code, as a usual debugging. It can be caused by some other exception during debugging. When that exception occures, there is no "breakpoint # hit" message.
+3. Sometimes (not often) WinDBG can suddenly break in random code, as a usual debugging. It can be caused by some other exceptions during debugging. When this exceptions occure, you don't get "breakpoint # hit" message.
 
 ![](./images/EXDI9.png)
 
 4. You can switch register's context to VTL1, using "wrmsr 0x1111 1" command. "wrmsr 0x1111 0" switch back to VTL0. VTL0 and VTL1 memory is accessible all time.
-5. If you want restart VM, but Hyper-V shows error about existing partition, see, that LiveCloudKd and WinDBG console message windows are closed. LiveCloudKd duplicate some handles from vmwp.exe. You can manually unload debugger driver, if you kill WinDBG process, because some interception messages will be handled by driver.
+5. If you want restart VM, but Hyper-V shows error about existing partition, see, that LiveCloudKd and WinDBG console message windows are closed. LiveCloudKd duplicates some handles from vmwp.exe. Also you can manually unload debugger driver, if you kill WinDBG process, because some interception messages will be handled by driver.
 
 ```
 net stop hvmm
