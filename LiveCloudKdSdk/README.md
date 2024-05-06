@@ -70,6 +70,7 @@ Functions description:
 
 Example:
 See more examples in LiveCloudKdExample project.
+https://github.com/gerhart01/LiveCloudKd/tree/master/LiveCloudKdExample
 	
 ```
 
@@ -110,6 +111,8 @@ Example:
 
 ```
 
+result: BOOLEAN
+
 # 2. SdkGetMachineType
 
 Get architecture of guest VM (x86 or AMD64). Plugin support only AMD64 guest virtual machines
@@ -123,7 +126,6 @@ typedef enum _MACHINE_TYPE {
 ```
 
 ```c
-
 MACHINE_TYPE
 SdkGetMachineType(
 	_In_ ULONG64 PartitionHandle
@@ -137,36 +139,54 @@ Example:
 	
 ```
 
+result: MACHINE_TYPE
+
 # 3. SdkCloseAllPartitions
 Close and free all objects for all opened partition
 
 ```c
+BOOLEAN
+	SdkCloseAllPartitions();
+```
 
 Example:
 
-BOOLEAN
-	SdkCloseAllPartitions();
-	
+```c
+SdkCloseAllPartitions();
 ```
+
+result: BOOLEAN
 
 # 4. SdkClosePartition
 
 Close and free all objects for specific partition. Execute this function, when you stop working with specific partition
 
 ```c
-
-Example:
-
 VOID
 SdkClosePartition(
 	ULONG64 Handle
 	)
-	
 ```
+
+Example:
+```c
+SdkClosePartition(g_CurrentPartitionIntHandle);
+```
+
+result: VOID
+
 
 # 5. SdkEnumPartitions
 
 Enumerate active Hyper-V partitions
+
+```c
+PULONG64
+SdkEnumPartitions(
+	_Inout_ PULONG64 PartitionTableCount,
+	_In_ PVM_OPERATIONS_CONFIG VmOpsConfig
+)
+```
 
 ```c
 
@@ -208,6 +228,8 @@ Enumerate active Hyper-V partitions
 	}
 	
 ```
+
+result - PULONG64
 
 # 6. SdkGetData (SdkGetData2)
 
