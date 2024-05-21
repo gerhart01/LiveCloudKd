@@ -1,5 +1,5 @@
-This is description for C# API wrappers for hvlib.dll - Hyper-V memory manager plugin
-Main library file is hvlibdotnet.cs. It must be integrated in your C# project.
+This is description for C# API wrappers for hvlib.dll - Hyper-V memory manager plugin  
+Main library file is hvlibdotnet.cs. It must be integrated in your C# project.  
 
 Example of C# API wrappers usages in [Hyper Views](https://github.com/gerhart01/Hyper-V-Tools/tree/main/HyperViews)
 
