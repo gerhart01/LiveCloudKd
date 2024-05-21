@@ -9,15 +9,15 @@ It can be useful for debug Hyper-V VM with VBS and HVCI enabled.
 Working with guest Windows Server 2022 and Windows 11, including preview builds (on November 2022)
 
 For debugging you need to use Windows Server 2019 (with August 2020 updates - Windows image name en_windows_server_2019_updated_aug_2020_x64_dvd_f4bab427.iso).
-It is good to use VMware Workstation for itm but you can try use Hyper-V with Windows Server 2019 as guest OS and Windows 11 as nested guest OS.
+It is good to use VMware Workstation for it, but you can try use Hyper-V with Windows Server 2019 as guest OS and Windows 11 as nested guest OS.
 
 # VSM\VBS activating for securekernel debugging
 
 First read official Microsoft document [Enable virtualization-based protection or code integrity](https://docs.microsoft.com/en-us/windows/security/threat-protection/device-guard/enable-virtualization-based-protection-of-code-integrity)
 
-It was enough to enable VBS in group policy editor.
+It was enough to enable VBS in group policy editor, but you can switch on additional options (for example, Kernel-mode Hardware-enforced Stack Protection)
 
-For guest VM don't forget enable SecureBoot option with TPM support (for Windows 11). 
+For guest VM don't forget enable Secure Boot and Trusted Platform Module (for Windows 11). 
 
 Check
 ```

@@ -241,7 +241,12 @@ class hvlib:
 
         CurrentPartition = self.PartitionArray[vm_id]
         print("You select", self.ArrayOfNames[vm_id])
-        self.hvlib.SdkSelectPartition(CurrentPartition)
+        result = self.hvlib.SdkSelectPartition(CurrentPartition)
+        
+        if not result:
+            print("SdkSelectPartition failed")
+            return 0
+            
         self.CurrentPartition = CurrentPartition
         return CurrentPartition
 

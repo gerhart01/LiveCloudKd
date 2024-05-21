@@ -54,15 +54,15 @@ For launch:
 
 When starting LiveCloudKd searches WinDBG in next steps:
 
-1. Standard Windows SDK installation folder (using register key)
-2. in Windows Registry HKLM\Software\LiveCloudKd\Parameters in WinDbgPath key. See RegParam.key for instance. 
-3. Set /y parameter with WinDBG path, for instance: 
+1. Standard Windows SDK installation folder (using registry key)
+2. in Windows Registry HKLM\Software\LiveCloudKd\Parameters in WinDbgPath key. See RegParam.key for examples. 
+3. Set /y parameter with WinDBG path, for examples: 
 
 ```
 LiveCloudKd /y C:\Microsoft\WinDBG
 ```
 
-4. If previous result is not successfully, LiveCloudKd tries to run kd.exe from same folder.
+4. If previous result is not successful, LiveCloudKd tries to run kd.exe from same folder.
 
 Performance comparison with LiveKd from Sysinternals Suite, at the time of release (LiveCloudKd is more performance: about 1000 times using ReadInterfaceHvmmDrvInternal interface):
 

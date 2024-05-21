@@ -1,5 +1,5 @@
 This is description for Python API wrappers for hvlib.dll library  
-Main library file is hvlib.py. Texted on Python 3.x
+Main library file is hvlib.py. Written on Python 3.x
 See Example.py for detailed information - [Example.py](https://github.com/gerhart01/LiveCloudKd/blob/master/LiveCloudKdPy/Example.py)  
 
 Also there is good example of Python API wrappers usage is Hyper-V memory manager plugin for [volatility plugin](https://github.com/gerhart01/Hyper-V-Tools/tree/main/Plugin_for_volatility)
@@ -45,11 +45,11 @@ vm_ops = objHvlib.GetPreferredSettings()
 vm_ops.LogLevel = 1
 ```
 
-result: CfgParameters object
+result type: CfgParameters object
 
 # 2. EnumPartitions
 
-Description: Hyper-V active partitions enumerations
+Description: Hyper-V active partitions enumerations in root OS
 
 ```python
 EnumPartitions(vm_ops)
@@ -78,7 +78,7 @@ result type: boolean
 
 # 3. GetData 
 
-Description: get specific data from partition
+Description: Get specific data from partition
 
 ```python
 integer GetData(HvddInformationClass param1)
@@ -106,7 +106,7 @@ Example:
 KernelBase = objHvlib.GetData(vm_handle, HvddInformationClass.HvddKernelBase)
 ```
 
-result - integer
+result type: integer
 
 # 4. SelectPartition 
 
@@ -126,7 +126,7 @@ Example:
 vm_handle = objHvlib.SelectPartition(vm_id)
 ```
 
-result - handle of virtual machine or 0 if, active virtual machines is not running on host
+result type: handle of virtual machine or 0, if active virtual machines are not running on host
 
 # 5. ReadPhysicalMemoryBlock
 
@@ -147,7 +147,7 @@ Example:
 buffer1 = objHvlib.ReadPhysicalMemoryBlock(vm_handle, phys_address, page_size)
 ```
 
-result: boolean
+result type: boolean
 
 # 6. ReadVirtualMemoryBlock
 
@@ -166,7 +166,7 @@ objHvlib.PrintHex(KernelBase)
 buffer2 = objHvlib.ReadVirtualMemoryBlock(vm_handle, KernelBase, page_size)
 ```
 
-result: boolean
+result type: boolean
 
 # 7. WritePhysicalMemoryBlock
 
@@ -187,7 +187,7 @@ Example:
 bResult = objHvlib.WritePhysicalMemoryBlock(vm_handle,phys_address, buffer1)
 ```
 
-result: boolean
+result type: boolean
 
 # 8. WriteVirtualMemoryBlock
 
@@ -208,4 +208,4 @@ Example:
 bResult = objHvlib.WriteVirtualMemoryBlock(vm_handle, KernelBase, buffer2)  
 ```
 
-result: boolean
+result type: boolean
