@@ -5,7 +5,7 @@ Example of C# API wrappers usages in [Hyper Views](https://github.com/gerhart01/
 
 - [1. GetPreferredSettings](#1-getpreferredsettings)
 - [2. EnumPartitions](#2-enumpartitions)
-- [3. SdkGetData2](#3-sdkgetdata2)
+- [3. GetData and GetData2](#3-getdata-and-getdata2)
 - [4. SelectPartition](#4-selectpartition)
 - [5. ReadPhysicalMemory](#5-readphysicalmemory)
 - [6. ReadVirtualMemory](#6-readvirtualmemory)
@@ -70,18 +70,20 @@ parameters:
 result type: IntPtr
 
 
-# 3. SdkGetData2
+# 3. GetData and GetData2
 
-Description: get specific data from partition
+Description: get specific data from partition. GetData and GetData2 have similar functionality, but with different parameters
 
 ```csharp
-    UInt64 SdkGetData2(UInt64 PartitionHandle, HVDD_INFORMATION_CLASS HvddInformationClass)
+    bool GetData(UInt64 VmHandle, HVDD_INFORMATION_CLASS InformationClass, out UIntPtr HvddInformation)
+    UInt64 GetData2(UInt64 PartitionHandle, HVDD_INFORMATION_CLASS HvddInformationClass)
 ```
 
 parameters:  
 
 * **PartitionHandle** - handle of partition
 * **HvddInformationClass** - class of partition
+* **HvddInformation** - pointer to variable with result
 
 available values:
 
@@ -127,27 +129,43 @@ available values:
     HvddBuilLabBuffer,
     HvddHvddGetCr3byPid,
     //Special set values
-    HvddSetMemoryBlock,
-    HvddEnlVmcsPointer
+    HvddSetMemoryBlock
 ```
 
 Example:
 
 ```csharp
     VmListBox lbItem = new VmListBox();
-    IntPtr VmName = (IntPtr)SdkGetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddPartitionFriendlyName);
+    IntPtr VmName = (IntPtr)GetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddPartitionFriendlyName);
     string? VmNameStr = Marshal.PtrToStringUni(VmName);
 
-    IntPtr VmGuid = (IntPtr)SdkGetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddVmGuidString);
+    IntPtr VmGuid = (IntPtr)GetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddVmGuidString);
     string? VmGuidStr = Marshal.PtrToStringUni(VmGuid);
 
-    IntPtr VmType = (IntPtr)SdkGetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddVmtypeString);
+    IntPtr VmType = (IntPtr)GetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddVmtypeString);
     string? VmTypeStr = Marshal.PtrToStringUni(VmType);
 
-    UInt64 PartitionId = SdkGetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddPartitionId);
+    UInt64 PartitionId = GetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddPartitionId);
 ```
 
-result type: integer
+Example:
+
+```csharp
+    VmListBox lbItem = new VmListBox();
+    string VmName;
+    bool bResult = GetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddPartitionFriendlyName, ref VmName);
+
+    string VmGuid;
+    bool bResult = GetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddVmGuidString, ref VmGuid);
+
+    string VmType;
+    bool bResult = GetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddVmtypeString, ref VmType);
+
+    UInt64 PartitionId;
+    bool bResult = GetData2(arPartition[i], HVDD_INFORMATION_CLASS.HvddPartitionId, PartitionId);
+```
+
+result type: UInt64 from GetData2 and boolean from GetData2 
 
 # 4. SelectPartition 
 
@@ -219,7 +237,7 @@ Example:
     uint bufferLength = largePage ? 0x1000 * 512u : 0x1000;
     byte[] pageBuffer = new byte[bufferLength];
 
-    Address = 0xFFFFFFF812345678;
+    Address = 0xFFFFF78000000000;
 
     bool bResult = Hvlib.ReadVirtualMemory(VmHandle, Address, bufferLength, pageBuffer)
 ```
@@ -274,7 +292,7 @@ Example:
 
     uint bufferLength = 0x8;
 
-    UInt64 Address = 0xFFFFFFF812345678;
+    UInt64 Address = 0xFFFFF78000000000;
     UInt64 Value = 0x15000;
 
     bool bResult = WriteVirtualMemory(PartitionHandle, Address, bufferLength, ref Value);

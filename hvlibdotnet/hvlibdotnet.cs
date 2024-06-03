@@ -11,7 +11,7 @@ namespace Hvlibdotnet
         public UInt64 VmHandle { get; set; }
         public string? VMName { get; set; }
     }
-    public class Hvlib
+    public partial class Hvlib
     {
         public Hvlib()
         {
@@ -137,7 +137,7 @@ namespace Hvlibdotnet
         private static extern bool SdkGetData(UInt64 PartitionHandle, HVDD_INFORMATION_CLASS HvddInformationClass, out UIntPtr HvddInformation);
 
         [DllImport("hvlib.dll")]
-        private static extern bool SdkReadPhysicalMemory(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, UIntPtr ClientBuffer, READ_MEMORY_METHOD Method);
+        private static extern bool SdkReadPhysicalMemory(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, IntPtr ClientBuffer, READ_MEMORY_METHOD Method);
 
         [DllImport("Hvlib.dll", EntryPoint = "SdkReadPhysicalMemory")]
         public static extern bool SdkReadPhysicalMemoryULong(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, ulong[] ClientBuffer, READ_MEMORY_METHOD Method);
@@ -194,7 +194,6 @@ namespace Hvlibdotnet
             List<VmListBox>? res = EnumPartitions(ref cfg);
             return res;
         }
-
         public static List<VmListBox>? EnumPartitions(ref VM_OPERATIONS_CONFIG cfg)
         {
             UInt64 PartitionCount = 0;
@@ -240,27 +239,23 @@ namespace Hvlibdotnet
             return ListObj;
         }
 
-        public static bool DumpCrashVirtualMachine()
+        public static UInt64 GetData2(UInt64 VmHandle, HVDD_INFORMATION_CLASS InformationClass)
         {
+            UInt64 uResult = Hvlib.SdkGetData2(VmHandle, InformationClass);
+            return uResult;
+        }
 
-            bool bResult = false;
-
-            bResult = SelectPartition(Hvlib.VmHandle);
-
-            if (!bResult)
-                return false;
-
-            UInt64 uMaxPage = (UInt64)Hvlib.SdkGetData2(Hvlib.VmHandle, HVDD_INFORMATION_CLASS.HvddMmMaximumPhysicalPage);
-            uMaxPage += 2;
-
-            return true;
+        public static bool GetData(UInt64 VmHandle, HVDD_INFORMATION_CLASS InformationClass, out UIntPtr HvddInformation)
+        {
+            bool bResult = Hvlib.SdkGetData(VmHandle, InformationClass, out HvddInformation);
+            return bResult;
         }
 
         public static IntPtr[] GetProcessesList(UInt64 PartitionHandle)
         {
 
             IntPtr[] arPartition = new IntPtr[1];
-            IntPtr aProcessList = (IntPtr)Hvlib.SdkGetData2(Hvlib.VmHandle, HVDD_INFORMATION_CLASS.HvddGetProcessesIds);
+            IntPtr aProcessList = (IntPtr)Hvlib.SdkGetData2(PartitionHandle, HVDD_INFORMATION_CLASS.HvddGetProcessesIds);
             Marshal.Copy(aProcessList, arPartition, 0, (int)1);
             IntPtr[] arProcess;
 
@@ -299,7 +294,7 @@ namespace Hvlibdotnet
             return SdkSelectPartition(Handle);
         }
 
-        public static bool ReadPhysicalMemory(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, UIntPtr ClientBuffer)
+        public static bool ReadPhysicalMemory(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, IntPtr ClientBuffer)
         {
             return SdkReadPhysicalMemory(PartitionHandle, StartPosition, ReadByteCount, ClientBuffer, Hvlib.cfg.ReadMethod);
         }
