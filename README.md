@@ -17,14 +17,14 @@ Tool has additional options in compare with LiveKd from Microsoft Sysinternals S
 LiveCloudKd. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v2.6.1.20240228/LiveCloudKd.v2.6.1.20240228-release.zip)  
 Contains EXDi plugin:  
 
-![WinDBG](images/image03.png)
-![WinDBG with modern UI](images/image04.png)
+![WinDBG](images/image01.png)
+![WinDBG with modern UI](images/image02.png)
 
 LiveCloudKd based on hvlib.dll library (Hyper-V memory manager plugin). Other tools, that were developed using this library:
 
 LiveCloudKd EXDi debugger. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.0.22021109/LiveCloudKd.EXDi.debugger.v1.0.22021109.zip). [Readme](https://github.com/gerhart01/LiveCloudKd/blob/master/ExdiKdSample/LiveDebugging.md)    
 Hyper-V Virtual Machine plugin for MemProcFS. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.2.20240228/leechcore_hyperv_plugin_28.02.2024.zip)  
-Hyper-V Memory Manager plugin for volatility. [Download](https://github.com/gerhart01/Hyper-V-Tools/releases/download/1.0.20221109/Hyper-V.Memory.Manager.plugin.for.volatility.v1.0.20221109.zip)  
+Hyper-V Memory Manager plugin for volatility. [Download](https://github.com/gerhart01/Hyper-V-Tools/releases/download/v1.0.20240427/Hyper-V.Memory.Manager.plugin.for.volatility.v1.0.20240427.zip)  
 
 Methods for accessing guest Hyper-V VM memory: 
 
@@ -54,9 +54,9 @@ For launch:
 
 When starting LiveCloudKd searches WinDBG in next steps:
 
-1. Standard Windows SDK installation folder (using registry key)
-2. in Windows Registry HKLM\Software\LiveCloudKd\Parameters in WinDbgPath key. See RegParam.key for examples. 
-3. Set /y parameter with WinDBG path, for examples: 
+1. Standard Windows SDK installation folder (using registry key).
+2. Windows Registry HKLM\Software\LiveCloudKd\Parameters\WinDbgPath key. See RegParam.key for instance. 
+3. Set /y parameter with WinDBG path, for instance: 
 
 ```
 LiveCloudKd /y C:\Microsoft\WinDBG
@@ -66,7 +66,7 @@ LiveCloudKd /y C:\Microsoft\WinDBG
 
 Performance comparison with LiveKd from Sysinternals Suite, at the time of release (LiveCloudKd is more performance: about 1000 times using ReadInterfaceHvmmDrvInternal interface):
 
-![](images/image02.png)
+![](images/image03.png)
 
 LiveCloudKd options:
 
