@@ -21,7 +21,8 @@ Environment:
 
 Revision History:
 
-	- Arthur Khudyaev (@gerhart_x) - 18-Apr-2019 - Add additional methods (using Microsoft winhv.sys and own hvmm.sys driver) for reading guest memory
+	- Arthur Khudyaev (@gerhart_x) - Many fixes of bugs
+    - Arthur Khudyaev (@gerhart_x) - 18-Apr-2019 - Add additional methods (using Microsoft winhv.sys and own hvmm.sys driver) for reading guest memory
 	- Arthur Khudyaev (@gerhart_x) - 20-Feb-2019 - Migrate parto of code to LiveCloudKd plugin
 	- Arthur Khudyaev (@gerhart_x) - 26-Jan-2019 - Migration to MemProcFS/LeechCore
 	- Matthieu Suiche (@msuiche) 11-Dec-2018 - Open-sourced LiveCloudKd in December 2018 on GitHub
@@ -54,27 +55,6 @@ WriteFileSynchronous(
     PVOID Buffer,
     ULONG NbOfBytesToWrite
 )
-/*++
-
-Routine Description:
-
-    Desc.
-
-Arguments:
-
-    Arg1 - Desc.
-
-    Arg2 - Desc.
-
-    Arg3 - Desc.
-
-Return Value:
-
-    Ret1 - Desc.
-
-    Ret2 - Desc.
-
---*/
 {
 DWORD WrittenBytes;
 BOOL Ret;

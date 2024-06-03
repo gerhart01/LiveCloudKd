@@ -20,24 +20,14 @@ Revision History:
     - Matthieu Suiche
 
 --*/
-#include "LiveCloudKdSdkPublic.h"
-
 #define _AMD64_
-
-//#define WIN32_NO_STATUS   /* Tell Windows headers you'll use ntstatus.s from NDK */
-//#include <windows.h>      /* Declare Windows Headers like you normally would */
-//#include "ntdefs.h"
-
-//#include <stdio.h>
-//#include <tlhelp32.h>
-//#include <stdlib.h> 
+#include <windows.h>  
+#include "HvlibHandle.h"
+#include <wdbgexts.h>
+#include "NtKernel\ntdefs.h"
+#include <stdio.h>
+#include <tlhelp32.h>
 #include <conio.h>
-
-#include <dbghelp.h>
-//#include <wdbgexts.h>
-//#include "dbg.h"
-//#include "vid.h"
-
 #include "hooker.h"
 #include "misc.h"
 #include "dmp.h"
@@ -45,17 +35,10 @@ Revision History:
 
 #define BLOCK_SIZE (1024 * 1024)
 
-#define WINDBG_FT_TABLE_PAGE_COUNT 0x270
+#define WINDBG_FT_TABLE_PAGE_COUNT 0x400
 
-//
-//limitation for max virtual dump size in hooker.c. Doesn't need anymore
-//
-//#define MAX_HIGH_FILE_OFFSET 0xFF
-
-
-//from Bin2Dmp
-//#define PRO_EDITION
-//#define FORCE_DEBUG_MODE 1
+#define wprintflvl1(format, ...)  {if (g_VmOperationsConfig.LogLevel >=1 ) { wprintf(format, ##__VA_ARGS__);} else {} } 
+#define printflvl1(format, ...)  {if (g_VmOperationsConfig.LogLevel >=1 ) { printf(format, ##__VA_ARGS__);} else {} } 
 
 #if defined(PRO_EDITION)
 #define DEBUG_ENABLED FORCE_DEBUG_MODE
@@ -64,58 +47,44 @@ Revision History:
 #else
 #define DEBUG_ENABLED 1
 #endif
-//
-// KDBG cyphered or not
-//
-
-//#define HYPERV_CONTAINER TRUE
-
-//
-//If you define USE_VIDDLL_FUNCTIONS, LiveCloudKd start using vid.dll functions, but it need ntoskrnl.exe life time patching
-//therefore it is not safe because of Patch Guard
-//
-
-//#define USE_VIDDLL_FUNCTIONS
-
 
 #define DUMP_COMMENT_STRING "Hyper-V Memory Dump. (c) 2010 MoonSols SARL <http://www.moonsols.com>"
-
-
-//
-// memoryblock.c
-//
-
-BOOL
-MmWriteVirtualAddress(
-    PHVDD_PARTITION PartitionEntry,
-    ULONG64 Va,
-    PVOID Buffer,
-    ULONG Size
-);
 
 //
 // dump.c
 //
+
+BOOLEAN
+DumpMemoryBlock(
+	_In_ ULONG64 PartitionEntry,
+	_In_ LPCWSTR DestinationFile,
+	_In_ ULONG64 Start,
+	_In_ ULONG64 Size,
+    _In_ GUEST_TYPE DumpMode
+);
+
 BOOLEAN
 DumpVirtualMachine(
-	_In_ PHVDD_PARTITION PartitionEntry,
+	_In_ ULONG64 PartitionEntry,
 	_In_ LPCWSTR DestinationFile
 );
 
 BOOLEAN
 DumpLiveVirtualMachine(
-	_In_ PHVDD_PARTITION PartitionEntry
+	_In_ ULONG64 PartitionEntry,
+	_In_ ULONG64 VmId
 );
 
 BOOLEAN
 DumpCrashVirtualMachine(
-	_In_ PHVDD_PARTITION PartitionEntry,
+	_In_ ULONG64 PartitionEntry,
 	_In_ LPCWSTR DestinationFile
 );
 
 //
 // file.c
 //
+
 BOOL
 CreateDestinationFile(
     LPCWSTR Filename,
@@ -137,17 +106,22 @@ WriteFileSynchronous(
 BOOL
 LaunchKd(
 	LPCWSTR DumpFile,
-	PHVDD_PARTITION PartitionEntry
+	ULONG64 PartitionEntry
 );
 
 BOOLEAN
 LaunchWinDbg(
-	PHVDD_PARTITION PartitionEntry
+	ULONG64 PartitionEntry
 );
 
 BOOLEAN
 LaunchWinDbgX(
-	PHVDD_PARTITION PartitionEntry
+	ULONG64 PartitionEntry
+);
+
+BOOLEAN
+LaunchWinDbgLive(
+    ULONG64 PartitionEntry
 );
 
 //
@@ -189,27 +163,29 @@ GetConsoleTextAttribute(
 
 PDUMP_HEADER64
 DumpFillHeader64(
-    PHVDD_PARTITION PartitionEntry
+	_In_ ULONG64 PartitionEntry
 );
+
 
 BOOLEAN
 DumpFillHeader(
-    PHVDD_PARTITION PartitionEntry,
-    PVOID *Header,
-    PULONG HeaderSize
+	_In_ ULONG64 PartitionEntry,
+	_In_ PVOID* Header,
+	_In_ PULONG HeaderSize
 );
 
 //
-//hooker.c
+// hooker.c
 //
 
 BOOL
 HookKd(
     HANDLE ProcessHandle,
-    ULONG ProcessId,
-    PHVDD_PARTITION PartitionEntry
+    ULONG ProcessId
 );
 
-extern BOOLEAN UseWinDbg;
-extern BOOLEAN UseWinDbgX;
-extern BOOLEAN UseEXDi;
+extern BOOLEAN g_UseWinDbg;
+extern BOOLEAN g_UseWinDbgLive;
+extern BOOLEAN g_UseWinDbgX;
+extern BOOLEAN g_UseEXDi;
+extern VM_OPERATIONS_CONFIG g_VmOperationsConfig;

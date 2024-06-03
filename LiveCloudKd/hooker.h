@@ -17,12 +17,15 @@ typedef DWORD (WINAPI *pGetFileSize)(HANDLE, LPDWORD);
 typedef BOOL (WINAPI *pReadFile)(HANDLE, LPVOID, DWORD, LPDWORD, LPOVERLAPPED);
 typedef VOID (WINAPI *pSetLastError)(DWORD);
 
-typedef BOOLEAN(WINAPI *pSdkHvmmInternalReadMemory)(HANDLE, MB_PAGE_INDEX, UINT64, PVOID);
-typedef BOOLEAN (WINAPI *pSdkHvmmHvReadGPA)(ULONG64, MB_PAGE_INDEX, UINT64, PVOID);
-typedef BOOLEAN(WINAPI *pSdkHvmmGetMemoryBlockInfoFromGPA)(PVOID);
-typedef BOOLEAN(WINAPI *pSdkHvmmReadPhysicalMemory)(PVOID, MB_PAGE_INDEX, UINT64, PVOID, READ_MEMORY_METHOD);
-typedef BOOLEAN(WINAPI *pSdkHvmmPatchPsGetCurrentProcess)(UINT64, UINT64);
-typedef BOOLEAN(WINAPI *pSdkHvmmRestorePsGetCurrentProcess)();
+//typedef BOOLEAN(WINAPI *pSdkHvmmInternalReadMemory)(HANDLE, MB_PAGE_INDEX, UINT64, PVOID);
+//typedef BOOLEAN (WINAPI *pSdkHvmmHvReadGPA)(ULONG64, MB_PAGE_INDEX, UINT64, PVOID);
+//typedef BOOLEAN(WINAPI *pSdkHvmmGetMemoryBlockInfoFromGPA)(PVOID);
+typedef BOOLEAN(WINAPI *pSdkHvmmReadPhysicalMemoryHandle)(ULONG64, MB_PAGE_INDEX, UINT64, PVOID, READ_MEMORY_METHOD);
+typedef PULONG64 (WINAPI *pSdkEnumPartitionsHandle)(PULONG64, PVM_OPERATIONS_CONFIG);
+typedef BOOLEAN(WINAPI *pSdkSelectPartitionHandle)(ULONG64);
+typedef ULONG64(WINAPI* pSdkSetData)(ULONG64, HVMM_INFORMATION_CLASS, ULONG64);
+//typedef BOOLEAN(WINAPI *pSdkHvmmPatchPsGetCurrentProcess)(UINT64, UINT64);
+//typedef BOOLEAN(WINAPI *pSdkHvmmRestorePsGetCurrentProcess)();
 
 //
 //Max file size of dmp file
@@ -47,41 +50,44 @@ typedef struct _FUNCTION_TABLE {
     pVirtualProtect _VirtualProtect;
     pVidReadMemoryBlockPageRange _VidReadMemoryBlockPageRange;
     pVidWriteMemoryBlockPageRange _VidWriteMemoryBlockPageRange;
-	pSdkHvmmInternalReadMemory _SdkHvmmInternalReadMemory;
-	pSdkHvmmReadPhysicalMemory _SdkHvmmReadPhysicalMemory;
-    pSdkHvmmHvReadGPA _SdkHvmmHvReadGPA;
-    pSdkHvmmGetMemoryBlockInfoFromGPA _SdkHvmmGetMemoryBlockInfoFromGPA;
-	pSdkHvmmPatchPsGetCurrentProcess _SdkHvmmPatchPsGetCurrentProcess;
-	pSdkHvmmRestorePsGetCurrentProcess _SdkHvmmRestorePsGetCurrentProcess;
+	pSdkHvmmReadPhysicalMemoryHandle _SdkHvmmReadPhysicalMemoryHandle;
+	pSdkEnumPartitionsHandle _SdkEnumPartitionsHandle;
+	pSdkSelectPartitionHandle _SdkSelectPartitionHandle;
     pCreateFileMappingA _CreateFileMappingA;
     pCreateFileMappingW _CreateFileMappingW;
     pMapViewOfFile _MapViewOfFile;
+	pSdkSetData _SdkSetData;
     pUnmapViewOfFile _UnmapViewOfFile;
     pGetFileSize _GetFileSize;
     pSetLastError _SetLastError;
     pReadFile _ReadFile;
     LARGE_INTEGER FileSize;
+	ULONG64 VmId;
     HANDLE CrashDumpHandle;
     PUCHAR Header;
     ULONG HeaderSize;
-    ULONG64 ContextPageIndex;
-    ULONG ContextOffsetLow;
+    ULONG64 ContextPageIndex[MAX_PROCESSORS];
+    ULONG ContextOffsetLow[MAX_PROCESSORS];
     HANDLE PartitionHandle;
     HANDLE PartitionHandleConst;
+	ULONG64 CurrentPartitionHandle;
     MB_HANDLE MemoryHandle;
     HV_PARTITION_ID PartitionId;
     MACHINE_TYPE MachineType;
-	READ_MEMORY_METHOD ReadMemoryMethod;
-	//MAP_FILE MapFile[30];
+	VM_OPERATIONS_CONFIG VmOpsConfig;
     MAP_FILE MapFile[20];
     ULONG MapIndex;
     BOOL IsDllLoad;
+	BOOL PartitionInit;
+	CONTEXT Context;
     PHYSICAL_ADDRESS KdDebuggerDataBlockPa;
+	ULONG64 KernelBase;
+	ULONG64 NumberOfCPU;
+	ULONG64 IdleKernelStack;
     CHAR KdDebuggerDataBlockBlock[KD_DEBUGGER_BLOCK_PAGE_SIZE];
-	HVDD_PARTITION PartitionEntry;
+	CHAR HvddPartition[0x7000];
 } FUNCTION_TABLE, *PFUNCTION_TABLE;
 
-//#define TABLE_OFFSET (PVOID)(NULL)
 #define TABLE_OFFSET (PVOID)(0xFFF000000) //random free address
 #define CREATEFILE_OFFSET (PVOID)((PUCHAR)TABLE_OFFSET + sizeof(FUNCTION_TABLE))
 #define CREATEFILEMAPPINGA_OFFSET (PVOID)((PUCHAR)CREATEFILE_OFFSET + 0x300)
@@ -91,15 +97,6 @@ typedef struct _FUNCTION_TABLE {
 #define GETFILESIZE_OFFSET (PVOID)((PUCHAR)UNMAPVIEWOFFILE_OFFSET + 0x100)
 #define READFILE_OFFSET (PVOID)((PUCHAR)GETFILESIZE_OFFSET + 0x100)
 #define VIRTUALPROTECT_OFFSET (PVOID)((PUCHAR)READFILE_OFFSET + 0x100)
-
-//#define CREATEFILE_OFFSET 0x2b0
-//#define CREATEFILEMAPPINGA_OFFSET CREATEFILE_OFFSET + 0x300
-//#define CREATEFILEMAPPINGW_OFFSET CREATEFILEMAPPINGA_OFFSET + 0x100
-//#define MAPVIEWOFFILE_OFFSET CREATEFILEMAPPINGW_OFFSET + 0x100
-//#define UNMAPVIEWOFFILE_OFFSET MAPVIEWOFFILE_OFFSET + 0x400
-//#define GETFILESIZE_OFFSET UNMAPVIEWOFFILE_OFFSET + 0x100
-//#define READFILE_OFFSET GETFILESIZE_OFFSET + 0x100
-//#define VIRTUALPROTECT_OFFSET READFILE_OFFSET + 0x100
 
 HANDLE WINAPI MyCreateFile(
   __in      LPCWSTR lpFileName,

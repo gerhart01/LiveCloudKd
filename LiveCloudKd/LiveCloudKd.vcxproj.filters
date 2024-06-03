@@ -45,9 +45,6 @@
     <ClInclude Include="..\LiveCloudKdSdk\LiveCloudKdSdk\include\public\HyperV\hvgdk.h">
       <Filter>Header Files\HyperV</Filter>
     </ClInclude>
-    <ClInclude Include="..\LiveCloudKdSdk\LiveCloudKdSdk\include\public\LiveCloudKdSdkPublic.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>

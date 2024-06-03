@@ -21,7 +21,8 @@ Environment:
 
 Revision History:
 
-	- Arthur Khudyaev (@gerhart_x) - 18-Apr-2019 - Add additional methods (using Microsoft winhv.sys and own hvmm.sys driver) for reading guest memory
+	- Arthur Khudyaev (@gerhart_x) - Many fixes of bugs
+    - Arthur Khudyaev (@gerhart_x) - 18-Apr-2019 - Add additional methods (using Microsoft winhv.sys and own hvmm.sys driver) for reading guest memory
 	- Arthur Khudyaev (@gerhart_x) - 20-Feb-2019 - Migrate parto of code to LiveCloudKd plugin
 	- Arthur Khudyaev (@gerhart_x) - 26-Jan-2019 - Migration to MemProcFS/LeechCore
 	- Matthieu Suiche (@msuiche) 11-Dec-2018 - Open-sourced LiveCloudKd in December 2018 on GitHub
@@ -32,34 +33,13 @@ Revision History:
 
 #include "hvdd.h"
 
-VIDDLL_FUNCTIONS g_VidDll = { 0 };
+//VIDDLL_FUNCTIONS g_VidDll = { 0 };
 NTDDLL_FUNCTIONS g_NtDll = { 0 };
 
 BOOLEAN
-ImportGlobalFunctions(
+ImportGlobalNtFunctions(
     VOID
 ) {
-    HMODULE hVid = LoadLibrary(L"vid.dll");
-    if (!hVid) {
-        Red(L"ERROR: Can't load vid.dll.\n");
-        return FALSE;
-    }
-
-    (FARPROC)g_VidDll.VidGetVirtualProcessorState = GetProcAddress(hVid, "VidGetVirtualProcessorState");
-    (FARPROC)g_VidDll.VidReadMemoryBlockPageRange = GetProcAddress(hVid, "VidReadMemoryBlockPageRange");
-    (FARPROC)g_VidDll.VidTranslateGvaToGpa = GetProcAddress(hVid, "VidTranslateGvaToGpa");
-    (FARPROC)g_VidDll.VidWriteMemoryBlockPageRange = GetProcAddress(hVid, "VidWriteMemoryBlockPageRange");
-    (FARPROC)g_VidDll.VidGetHvPartitionId = GetProcAddress(hVid, "VidGetHvPartitionId");
-    (FARPROC)g_VidDll.VidGetPartitionFriendlyName = GetProcAddress(hVid, "VidGetPartitionFriendlyName");
-
-    if (!g_VidDll.VidGetVirtualProcessorState || !g_VidDll.VidReadMemoryBlockPageRange ||
-        !g_VidDll.VidTranslateGvaToGpa || !g_VidDll.VidWriteMemoryBlockPageRange ||
-        !g_VidDll.VidGetHvPartitionId) {
-
-        Red(L"ERROR: Can't import any of the VID.dll functions.\n");
-        return FALSE;
-    }
-
     HMODULE hNtdll = LoadLibrary(L"ntdll.dll");
     if (!hNtdll) {
         Red(L"ERROR: Can't load NTDLL.dll.\n");

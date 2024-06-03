@@ -32,6 +32,8 @@ Revision History:
 
 #include "hvdd.h"
 
+HANDLE g_ThreadHandle[0xFFFF] = {0};
+
 BOOLEAN
 CheckEXDiRegistration()
 {
@@ -55,28 +57,42 @@ BOOLEAN
 EXDiRegistration()
 {
 	if (CheckEXDiRegistration() == FALSE) {
-		wprintf(L"It looks like EXDi COM extention is not regestered. Registering \n");
-		ShellExecute(NULL, NULL, L"C:\\WINDOWS\\system32\\regsvr32.exe", L"/s ExdiKdSample.dll", NULL, SW_HIDE);
+		wprintf(L"It looks like EXDi COM extention is not regestered. Try to registering \n");
+
+		WCHAR ApplicationName[MAX_PATH * 3];
+		WCHAR Param[MAX_PATH * 3] = L"/s ";
+
+		if (!GetCurrentDirectory(sizeof(ApplicationName) / sizeof(ApplicationName[0]), ApplicationName))
+		{
+			wprintf(L"Some problems with plugin registration. Try register extention manually using \"regsvr32.exe ExdiKdSample.dll\" command\n");
+		}
+
+		lstrcatW(ApplicationName, L"\\ExdiKdSample.dll");
+		lstrcatW(Param, ApplicationName);
+
+		ShellExecute(NULL, NULL, L"C:\\WINDOWS\\system32\\regsvr32.exe", Param, NULL, SW_HIDE);
 		if (CheckEXDiRegistration() == TRUE) {
-			wprintf(L"Registration was sucessfully completed. \n");
+			wprintf(L"Registration was successfully completed. \n");
 		}
 		else {
-			wprintf(L"Some problems with registration. Try register extention manually using \"regsvr32.exe ExdiKdSample.dll\" command\n");
+			wprintf(L"Some problem with registration. Try register extension manually using \"regsvr32.exe ExdiKdSample.dll\" command\n");
+			return FALSE;
 		}
 	}
 	return TRUE;
 }
 
 BOOLEAN
-LaunchWinDbgX(PHVDD_PARTITION PartitionEntry)
+LaunchWinDbgX(ULONG64 PartitionEntry)
 {
 	STARTUPINFO si = {0};
 	PROCESS_INFORMATION pi = {0};
 
 	WCHAR CommandLine[MAX_PATH * 3];
 	WCHAR ApplicationName[MAX_PATH * 3];
+	DWORD Error = 0;
 
-	INT64 KdVersionBlock = PartitionEntry->KiExcaliburData.KdVersionBlock;
+	//UINT64 KdVersionBlock = PartitionEntry->KiExcaliburData.KdVersionBlock;
 
 	lstrcatW(ApplicationName, L"WinDBGX.exe");
 	swprintf_s(CommandLine, sizeof(CommandLine) / sizeof(CommandLine[0]),
@@ -99,7 +115,8 @@ LaunchWinDbgX(PHVDD_PARTITION PartitionEntry)
 		&pi)
 		)
 	{
-		if (GetLastError() == ERROR_FILE_NOT_FOUND)
+		Error = GetLastError();
+		if ((Error == ERROR_FILE_NOT_FOUND) || (Error == ERROR_PATH_NOT_FOUND))
 		{
 			Red(L"   You must install WinDBG preview from Windows Store.\n");
 		}
@@ -114,7 +131,7 @@ LaunchWinDbgX(PHVDD_PARTITION PartitionEntry)
 }
 
 BOOLEAN
-LaunchWinDbg(PHVDD_PARTITION PartitionEntry)
+LaunchWinDbg(ULONG64 PartitionEntry)
 {
 	STARTUPINFO si = { 0 };
 	PROCESS_INFORMATION pi = { 0 };
@@ -122,8 +139,8 @@ LaunchWinDbg(PHVDD_PARTITION PartitionEntry)
 	WCHAR CommandLine[MAX_PATH * 3];
 	WCHAR ApplicationName[MAX_PATH * 3];
 
-	INT64 KdVersionBlock = PartitionEntry->KiExcaliburData.KdVersionBlock;
-	wprintf(L"%lld \n", KdVersionBlock);
+	//UINT64 KdVersionBlock = PartitionEntry->KiExcaliburData.KdVersionBlock;
+	//wprintf(L"%lld \n", KdVersionBlock);
 
 	GetCurrentDirectory(sizeof(ApplicationName)/ sizeof(ApplicationName[0]), ApplicationName);
 
@@ -133,6 +150,7 @@ LaunchWinDbg(PHVDD_PARTITION PartitionEntry)
 	swprintf_s(CommandLine, sizeof(CommandLine) / sizeof(CommandLine[0]),
 		L"-v -kx exdi:CLSID={53838F70-0936-44A9-AB4E-ABB568401508},Kd=Guess");
 	//L"-v -kx exdi:CLSID={53838F70-0936-44A9-AB4E-ABB568401508},Kd=VerAddr:%lld", KdVersionBlock);
+	wprintf(L"windbg.exe %s \n", CommandLine);
 
 	EXDiRegistration();
 
@@ -159,22 +177,53 @@ LaunchWinDbg(PHVDD_PARTITION PartitionEntry)
 		return FALSE;
 	}
 
+	return TRUE;
+}
 
-	//s = malloc(size);
-	//if (s == NULL)
-	//{
-	//	return FALSE;
-	//}
-	//RtlZeroMemory(s, size);
+BOOLEAN
+LaunchWinDbgLive(ULONG64 PartitionEntry)
+{
+	STARTUPINFO si = { 0 };
+	PROCESS_INFORMATION pi = { 0 };
 
-	//swprintf_s(s, size, L"%lld",KdVersionBlock);
-	
+	WCHAR CommandLine[MAX_PATH * 3];
+	WCHAR ApplicationName[MAX_PATH * 3];
+
+	GetCurrentDirectory(sizeof(ApplicationName) / sizeof(ApplicationName[0]), ApplicationName);
+
+	lstrcatW(ApplicationName, L"\\windbg.exe");
+	swprintf_s(CommandLine, sizeof(CommandLine) / sizeof(CommandLine[0]),
+		L"-d -v -kx exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess");
+	wprintf(L"windbg.exe %s \n", CommandLine);
+
+	if (!EXDiRegistration())
+		return FALSE;
+
+	if (!CreateProcess(ApplicationName,
+		CommandLine,
+		NULL,
+		NULL,
+		FALSE,
+		0,
+		NULL,
+		NULL,
+		&si,
+		&pi)
+		)
+	{
+		if (GetLastError() == ERROR_FILE_NOT_FOUND)
+			Red(L"   You must put LiveCloudKd.exe in the WinDbg Directory.\n");
+		else
+			wprintf(L"CreateProcess failed (%d).\n", GetLastError());
+
+		return FALSE;
+	}
 
 	return TRUE;
 }
 
 BOOL
-LaunchKd(LPCWSTR DumpFile, PHVDD_PARTITION PartitionEntry)
+LaunchKd(LPCWSTR DumpFile, ULONG64 PartitionEntry)
 {
 STARTUPINFO si;
 PROCESS_INFORMATION pi;
@@ -186,14 +235,14 @@ ULONG dwContinueStatus;
 
 // CONTEXT Context;
 
-HANDLE ThreadHandle[0xFFFF];
-
 HANDLE DuplicatedHandle;
 NTSTATUS NtStatus;
 
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
+
+	//RtlZeroMemory(&FunctionTable, sizeof(FunctionTable));
 
     si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
     si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -205,11 +254,11 @@ NTSTATUS NtStatus;
     // WinDbg or Kd ?
     // C:\\WinDDK\\7600.16385.1\\Debuggers\\
     //
-    if (UseWinDbg == FALSE)
+    if (g_UseWinDbg == FALSE)
     {
         swprintf_s(CommandLine, sizeof(CommandLine) / sizeof(CommandLine[0]),
-                   //L"kd.exe -d -loga log3.txt -v -t -z \"%s\"", DumpFile);
-        L"kd.exe -c \".segmentation -X -a; .effmach amd64\" -z \"%s\"", DumpFile); //from swichdbgext by @msuiche
+                   //L"kd.exe -c \".segmentation -X -a; .effmach amd64\" -d -loga log3.txt -v -t -z \"%s\"", DumpFile);
+        L"kd.exe -z \"%s\"", DumpFile);
           //  L"kd.exe -v -z \"%s\"", DumpFile);
     }
     else
@@ -243,7 +292,7 @@ NTSTATUS NtStatus;
 
     SetConsoleTitle(L"LiveCloudKd");
     // wprintf(L"Main Thread: pi.dwThreadId = %d\n", pi.dwThreadId);
-    ThreadHandle[pi.dwThreadId] = pi.hThread;
+    g_ThreadHandle[pi.dwThreadId] = pi.hThread;
    
 
     while (TRUE)
@@ -263,9 +312,9 @@ NTSTATUS NtStatus;
                                                      0, FALSE, DUPLICATE_SAME_ACCESS);
                         if (NtStatus != STATUS_SUCCESS) goto Exit;
                         FunctionTable.PartitionHandle = DuplicatedHandle;
-						FunctionTable.PartitionEntry.PartitionHandle = DuplicatedHandle;
-						FunctionTable.PartitionEntry.CurrentProcess = pi.dwProcessId;
-                        HookKd(pi.hProcess, pi.dwProcessId, PartitionEntry);
+						//FunctionTable.PartitionEntry.Base.PartitionHandle = DuplicatedHandle;
+						//FunctionTable.PartitionEntry.Base.CurrentProcess = pi.dwProcessId;
+                        HookKd(pi.hProcess, pi.dwProcessId);
                         dwContinueStatus = DBG_CONTINUE;
 
                         /*
@@ -319,7 +368,7 @@ NTSTATUS NtStatus;
                          DbgEvent.dwThreadId,
                          DbgEvent.u.CreateThread.hThread);
                 */
-                ThreadHandle[DbgEvent.dwThreadId] = DbgEvent.u.CreateThread.hThread;
+                g_ThreadHandle[DbgEvent.dwThreadId] = DbgEvent.u.CreateThread.hThread;
             break;
         }
 

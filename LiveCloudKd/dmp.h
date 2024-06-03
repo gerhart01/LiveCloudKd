@@ -27,7 +27,6 @@ Revision History:
 #define DUMP_VALID_DUMP64 ('46UD')
 
 #define DUMP_TYPE_FULL 1
-//#define DUMP_TYPE_KERNEL_BITMAP 5
 
 #define X86_KPRCB_OFFSET              0x120
 #define X86_KPROCESSOR_STATE_OFFSET   0x01C
@@ -39,12 +38,8 @@ Revision History:
 #define X86_NT61_KPROCESSOR_STATE_OFFSET 0x18
 
 #define X64_KPRCB_OFFSET                0x180
-//#define X64_KPROCESSOR_STATE_OFFSET     0x040
 #define X64_KPROCESSOR_STATE_OFFSET     0x100 //Windows 10 1803 HARDCODED
 #define X64_KSPECIAL_REGISTERS_OFFSET   0x000
-//#define X64_CONTEXT_OFFSET              0x0E0
-//#define X64_CONTEXT_OFFSET              0x0F0 //Windows 10 1803 HARDCODED
-//#define X64_CONTEXT_OFFSET              0x0A0 //Test
 
 extern FUNCTION_TABLE FunctionTable;
 
@@ -67,7 +62,7 @@ typedef struct _PHYSICAL_MEMORY_RUN64 {
 typedef struct _PHYSICAL_MEMORY_DESCRIPTOR64 {
     ULONG NumberOfRuns;
     ULONG64 NumberOfPages;
-    PHYSICAL_MEMORY_RUN64 Run[1];
+    PHYSICAL_MEMORY_RUN64 Run[0x20];
 } PHYSICAL_MEMORY_DESCRIPTOR64, *PPHYSICAL_MEMORY_DESCRIPTOR64;
 
 typedef struct _DUMP_HEADER32 {
@@ -96,7 +91,6 @@ typedef struct _DUMP_HEADER32 {
         UCHAR PhysicalMemoryBlockBuffer[700];
     };
     union {
-        // CONTEXT Context;
         UCHAR ContextRecord[1200];
     };
     EXCEPTION_RECORD32 ExceptionRecord;
@@ -132,7 +126,6 @@ typedef struct _DUMP_HEADER64 {
     ULONG64 BugCheckParameter3;
     ULONG64 BugCheckParameter4;
     CHAR VersionUser[32];
-    //ULONG64 KdDebuggerDataBlock;
     PKDDEBUGGER_DATA64 KdDebuggerDataBlock;
     union {
         PHYSICAL_MEMORY_DESCRIPTOR64 PhysicalMemoryBlock;

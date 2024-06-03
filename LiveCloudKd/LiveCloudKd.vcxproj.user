@@ -1,38 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <RemoteDebuggerCommand>C:\Distr\Test\WinDBG101903x64\LiveCloudKd.exe</RemoteDebuggerCommand>
-    <RemoteDebuggerWorkingDirectory>C:\Distr\Test\WinDBG101903x64</RemoteDebuggerWorkingDirectory>
-    <RemoteDebuggerServerName>192.168.174.132</RemoteDebuggerServerName>
+    <RemoteDebuggerCommand>
+    </RemoteDebuggerCommand>
+    <RemoteDebuggerWorkingDirectory>
+    </RemoteDebuggerWorkingDirectory>
+    <RemoteDebuggerServerName>
+    </RemoteDebuggerServerName>
     <RemoteDebuggerConnection>RemoteWithoutAuthentication</RemoteDebuggerConnection>
     <RemoteDebuggerDebuggerType>NativeOnly</RemoteDebuggerDebuggerType>
-    <DeploymentDirectory>C:\Distr\Test\WinDBG101903x64</DeploymentDirectory>
+    <DeploymentDirectory>
+    </DeploymentDirectory>
     <DebuggerFlavor>WindowsRemoteDebugger</DebuggerFlavor>
-    <AdditionalFiles>D:\Projects\HyperVDebug\files\LiveCloudKdSdk.dll;</AdditionalFiles>
-    <RemoteDebuggerCommandArguments>
-    </RemoteDebuggerCommandArguments>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug2016|x64'">
-    <RemoteDebuggerCommand>C:\Distr\Test\LiveCloudKd2.exe</RemoteDebuggerCommand>
-    <RemoteDebuggerWorkingDirectory>C:\Distr\Test</RemoteDebuggerWorkingDirectory>
-    <RemoteDebuggerServerName>192.168.1.44</RemoteDebuggerServerName>
-    <RemoteDebuggerConnection>RemoteWithoutAuthentication</RemoteDebuggerConnection>
-    <RemoteDebuggerDebuggerType>NativeOnly</RemoteDebuggerDebuggerType>
-    <DeploymentDirectory>C:\Distr\Test</DeploymentDirectory>
-    <DebuggerFlavor>WindowsRemoteDebugger</DebuggerFlavor>
+    <AdditionalFiles>
+    </AdditionalFiles>
+    <RemoteDebuggerCommandArguments>/m 1 /v 2 /a 0 /b 0</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommand>C:\Distr\Test\WinDBG6.12\LiveCloudKd2.exe</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>C:\Distr\Test\WinDBG6.12</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsRemoteDebugger</DebuggerFlavor>
-    <RemoteDebuggerCommand>C:\Distr\Test\WinDBG101903x64\LiveCloudKd.exe</RemoteDebuggerCommand>
-    <RemoteDebuggerServerName>192.168.174.130</RemoteDebuggerServerName>
-    <RemoteDebuggerWorkingDirectory>C:\Distr\Test\WinDBG101903x64</RemoteDebuggerWorkingDirectory>
+    <RemoteDebuggerCommand>
+    </RemoteDebuggerCommand>
+    <RemoteDebuggerServerName>
+    </RemoteDebuggerServerName>
+    <RemoteDebuggerWorkingDirectory>
+    </RemoteDebuggerWorkingDirectory>
     <RemoteDebuggerDebuggerType>NativeOnly</RemoteDebuggerDebuggerType>
-    <DeploymentDirectory>C:\Distr\Test\WinDBG101903x64</DeploymentDirectory>
+    <DeploymentDirectory>
+    </DeploymentDirectory>
     <RemoteDebuggerConnection>RemoteWithoutAuthentication</RemoteDebuggerConnection>
-    <AdditionalFiles>D:\Projects\HyperVDebug\files\LiveCloudKdSdk.dll</AdditionalFiles>
-    <RemoteDebuggerCommandArguments>
-    </RemoteDebuggerCommandArguments>
+    <AdditionalFiles>
+    </AdditionalFiles>
+    <RemoteDebuggerCommandArguments>/m 1 /v 2 /a 0 /b 0</RemoteDebuggerCommandArguments>
   </PropertyGroup>
 </Project>
