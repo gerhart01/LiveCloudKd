@@ -13,60 +13,48 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\HyperV">
-      <UniqueIdentifier>{03b94e68-4d08-4a5c-8f49-e5779cf6ba31}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dmp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hooker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hvdd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="misc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\LiveCloudKdSdk\LiveCloudKdSdk\include\public\HyperV\vid.h">
-      <Filter>Header Files\HyperV</Filter>
-    </ClInclude>
-    <ClInclude Include="..\LiveCloudKdSdk\LiveCloudKdSdk\include\public\HyperV\viddefs.h">
-      <Filter>Header Files\HyperV</Filter>
-    </ClInclude>
-    <ClInclude Include="..\LiveCloudKdSdk\LiveCloudKdSdk\include\public\HyperV\hvgdk.h">
-      <Filter>Header Files\HyperV</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClCompile Include="src\livecloudkd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\misc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dump.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\file.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooker.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="misc.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dump.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="file.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="hooker.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="kd.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="livecloudkd.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="headers\misc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\dmp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\hooker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\hvdd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

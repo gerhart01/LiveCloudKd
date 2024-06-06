@@ -377,25 +377,16 @@ FT = (PFUNCTION_TABLE)TABLE_OFFSET;
 
             Module = FT->_LoadLibrary(DllName);
 
-            DllName[0] = L'l';
-            DllName[1] = L'i';
-            DllName[2] = L'v';
-            DllName[3] = L'e';
-            DllName[4] = L'c';
-            DllName[5] = L'l';
-            DllName[6] = L'o';
-            DllName[7] = L'u';
-            DllName[8] = L'd';
-            DllName[9] = L'k';
-            DllName[0xA] = L'd';
-            DllName[0xB] = L's';
-            DllName[0xC] = L'd';
-            DllName[0xD] = L'k';
-            DllName[0xE] = L'.';
-            DllName[0xF] = L'd';
-            DllName[0x10] = L'l';
-            DllName[0x11] = L'l';
-            DllName[0x12] = L'\0';
+            DllName[0] = L'h';
+            DllName[1] = L'v';
+            DllName[2] = L'l';
+            DllName[3] = L'i';
+            DllName[4] = L'b';
+            DllName[5] = L'.';
+            DllName[6] = L'd';
+            DllName[7] = L'l';
+            DllName[8] = L'l';
+            DllName[9] = L'\0';
 
             Module = FT->_LoadLibrary(DllName);
 
@@ -697,25 +688,16 @@ BOOL WINAPI MyVirtualProtect(
 
         FT->_LoadLibrary(DllName);
 
-        DllName[0] = L'l';
-        DllName[1] = L'i';
-        DllName[2] = L'v';
-        DllName[3] = L'e';
-        DllName[4] = L'c';
-        DllName[5] = L'l';
-        DllName[6] = L'o';
-        DllName[7] = L'u';
-        DllName[8] = L'd';
-        DllName[9] = L'k';
-        DllName[0xA] = L'd';
-        DllName[0xB] = L's';
-        DllName[0xC] = L'd';
-        DllName[0xD] = L'k';
-        DllName[0xE] = L'.';
-        DllName[0xF] = L'd';
-        DllName[0x10] = L'l';
-        DllName[0x11] = L'l';
-        DllName[0x12] = L'\0';
+        DllName[0] = L'h';
+        DllName[1] = L'v';
+        DllName[2] = L'l';
+        DllName[3] = L'i';
+        DllName[4] = L'b';
+        DllName[5] = L'.';
+        DllName[6] = L'd';
+        DllName[7] = L'l';
+        DllName[8] = L'l';
+        DllName[9] = L'\0';
 
         FT->_LoadLibrary(DllName);
         FT->IsDllLoad = TRUE;

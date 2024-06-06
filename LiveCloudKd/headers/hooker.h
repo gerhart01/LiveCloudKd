@@ -16,19 +16,13 @@ typedef BOOL (WINAPI *pUnmapViewOfFile)(LPCVOID);
 typedef DWORD (WINAPI *pGetFileSize)(HANDLE, LPDWORD);
 typedef BOOL (WINAPI *pReadFile)(HANDLE, LPVOID, DWORD, LPDWORD, LPOVERLAPPED);
 typedef VOID (WINAPI *pSetLastError)(DWORD);
-
-//typedef BOOLEAN(WINAPI *pSdkHvmmInternalReadMemory)(HANDLE, MB_PAGE_INDEX, UINT64, PVOID);
-//typedef BOOLEAN (WINAPI *pSdkHvmmHvReadGPA)(ULONG64, MB_PAGE_INDEX, UINT64, PVOID);
-//typedef BOOLEAN(WINAPI *pSdkHvmmGetMemoryBlockInfoFromGPA)(PVOID);
 typedef BOOLEAN(WINAPI *pSdkHvmmReadPhysicalMemoryHandle)(ULONG64, MB_PAGE_INDEX, UINT64, PVOID, READ_MEMORY_METHOD);
 typedef PULONG64 (WINAPI *pSdkEnumPartitionsHandle)(PULONG64, PVM_OPERATIONS_CONFIG);
 typedef BOOLEAN(WINAPI *pSdkSelectPartitionHandle)(ULONG64);
 typedef ULONG64(WINAPI* pSdkSetData)(ULONG64, HVMM_INFORMATION_CLASS, ULONG64);
-//typedef BOOLEAN(WINAPI *pSdkHvmmPatchPsGetCurrentProcess)(UINT64, UINT64);
-//typedef BOOLEAN(WINAPI *pSdkHvmmRestorePsGetCurrentProcess)();
 
 //
-//Max file size of dmp file
+// Max file size of dmp file
 //
 #define MAX_HIGH_FILE_OFFSET 0xFF
 

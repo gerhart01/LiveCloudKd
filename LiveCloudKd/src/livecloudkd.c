@@ -20,11 +20,11 @@ Environment:
 	- User mode
 
 Revision History:
-	
+
 	- Arthur Khudyaev (@gerhart_x) - Many fixes of bugs
 	- Arthur Khudyaev (@gerhart_x) - 03-Feb-2020 - Add live debugging support for Windows Server 2019.
 	- Arthur Khudyaev (@gerhart_x) - 15-Dec-2019 - Fixes for build memory blocking proc for large VM. Fix .dmp file creation proc.
-	- Arthur Khudyaev (@gerhart_x) - 28-Nov-2019 - Add Hyper-V interception exception supporting (for PF injection). 
+	- Arthur Khudyaev (@gerhart_x) - 28-Nov-2019 - Add Hyper-V interception exception supporting (for PF injection).
 	- Arthur Khudyaev (@gerhart_x) - 28-Nov-2019 - Windows 19H2 is supported
 	- Arthur Khudyaev (@gerhart_x) - 22-Nov-2019 - Add -f options for Windows Sandbox\WDAG. It freeze CPU on every read memory operation. Reliability of operation is increased meaningfully. (Suspending WindowsSandbox.exe is variant too)
 	- Arthur Khudyaev (@gerhart_x) - 30-Oct-2019 - Add shielded VM support.
@@ -73,13 +73,12 @@ WriteEXDiPartitionId(ULONG VmId)
 	HKEY hDrvKey, hkey;
 	LSTATUS regStatus;
 	BOOLEAN Ret = FALSE;
-	//regStatus = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Services\\hvmm", 0, KEY_ALL_ACCESS, &hDrvKey);
 	regStatus = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\LiveCloudKd\\Parameters", 0, KEY_ALL_ACCESS, &hDrvKey);
 
 	if (regStatus != ERROR_SUCCESS) {
 
 		regStatus = RegCreateKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\LiveCloudKd\\Parameters", &hkey);
-		if (regStatus != ERROR_SUCCESS) 
+		if (regStatus != ERROR_SUCCESS)
 		{
 			wprintf(L"Driver parameter key was not created\n");
 			Ret = FALSE;
@@ -110,54 +109,54 @@ WriteEXDiPartitionId(ULONG VmId)
 VOID
 Help()
 {
-    Disclamer[0] = '!';
-    wprintf(L"Usage: LiveCloudKd.exe [/w] [/x] [/a {0-5}] [/b {0-9}] [/m {0-3}] [/e] [/l] [-o path] [/v {0-2}] [/z] [/?]\n"
-            L"      /a        Pre-selected action.\n"
-            L"                   0 - Live kernel debugging\n"
-            L"                   1 - Produce a linear physical memory dump\n"
-            L"                   2 - Produce a Microsoft full memory crash dump\n"
-			L"                   3 - Dump guest OS memory chunk\n"
-			L"                   4 - Dump RAW guest OS memory (without KDBG scanning)\n"
-			L"                   5 - Resume VM\n"
-			L"      /b        Pre-selected VM.\n"
-			L"      /e        LiveCloudKd works using EXDi plugin. See description on\n" 
-			L"                https://github.com/gerhart01/LiveCloudKd/tree/master/ExdiKdSample for more detailes \n"
-			L"      /f        Force freeze CPU on every read operations. It is actual for Windows Sandbox, because it constantly resume CPU.\n"
-			L"      /m        Memory access type.\n"
-			L"                   0 - Winhvr.sys interface	\n"
-			L"                   1 - Raw memory interface (hvmm.sys) \n"
-			L"                   2 - Injected vidaux.dll memory interface	\n"
-			L"                   3 - Native vid.dll memory interface. Works in Windows Server  2012, 2012 R2 and 2016 Hyper-V\n"
-			L"      /o        Destination path for the output file (Action 1 - 3).\n"
-			L"      /p        Pause partition.\n"
-			L"      /v        Verbose output.\n"
-			L"      /w        Run Windbg instead of Kd (Kd is the default).\n"
-			L"      /l        Run Windbg instead in EXDi Live mode.\n"
-			L"      /x        Run Windbg Preview instead of Kd (Kd is the default).\n"
-			L"      /z        Working with EXO partition.\n"
-            L"      /?        Print this help.\n");
+	Disclamer[0] = '!';
+	wprintf(L"Usage: LiveCloudKd.exe [/w] [/x] [/a {0-5}] [/b {0-9}] [/m {0-3}] [/e] [/l] [-o path] [/v {0-2}] [/z] [/?]\n"
+		L"      /a        Pre-selected action.\n"
+		L"                   0 - Live kernel debugging\n"
+		L"                   1 - Produce a linear physical memory dump\n"
+		L"                   2 - Produce a Microsoft full memory crash dump\n"
+		L"                   3 - Dump guest OS memory chunk\n"
+		L"                   4 - Dump RAW guest OS memory (without KDBG scanning)\n"
+		L"                   5 - Resume VM\n"
+		L"      /b        Pre-selected VM.\n"
+		L"      /e        LiveCloudKd works using EXDi plugin. See description on\n"
+		L"                https://github.com/gerhart01/LiveCloudKd/tree/master/ExdiKdSample for more detailes \n"
+		L"      /f        Force freeze CPU on every read operations. It is actual for Windows Sandbox, because it constantly resume CPU.\n"
+		L"      /m        Memory access type.\n"
+		L"                   0 - Winhvr.sys interface	\n"
+		L"                   1 - Raw memory interface (hvmm.sys) \n"
+		L"                   2 - Injected vidaux.dll memory interface	\n"
+		L"                   3 - Native vid.dll memory interface. Works in Windows Server  2012, 2012 R2 and 2016 Hyper-V\n"
+		L"      /o        Destination path for the output file (Action 1 - 3).\n"
+		L"      /p        Pause partition.\n" 
+		L"      /v        Verbose output.\n"
+		L"      /w        Run Windbg instead of Kd (Kd is the default).\n"
+		L"      /l        Run Windbg instead in EXDi Live mode.\n"
+		L"      /x        Run Windbg Preview instead of Kd (Kd is the default).\n"
+		L"      /z        Working with EXO partition.\n"
+		L"      /?        Print this help.\n");
 }
 
 VOID
 ParseArguments(
 	_In_ ULONG argc,
-	_In_ LPCWSTR *argv
+	_In_ LPCWSTR* argv
 )
 {
-ULONG Index;
-UCHAR ChAction;
-BOOLEAN bChoice = FALSE;
+	ULONG Index;
+	UCHAR ChAction;
+	BOOLEAN bChoice = FALSE;
 
-    for (Index = 1; Index < argc; Index += 1)
-    {
-        if ((argv[Index][0] != L'/') && (argv[Index][0] != L'-')) continue;
+	for (Index = 1; Index < argc; Index += 1)
+	{
+		if ((argv[Index][0] != L'/') && (argv[Index][0] != L'-')) continue;
 
-        switch (argv[Index][1])
-        {
-            case L'w':
-                g_UseWinDbg = TRUE;
+		switch (argv[Index][1])
+		{
+			case L'w':
+				g_UseWinDbg = TRUE;
 				g_UseEXDi = TRUE;
-            break;
+				break;
 			case L'x':
 				g_UseWinDbgX = TRUE;
 				g_UseEXDi = TRUE;
@@ -171,25 +170,25 @@ BOOLEAN bChoice = FALSE;
 				break;
 			case L'p':
 				g_PausePartition = TRUE;
-					break;
-            case L'o':
-                if ((Index + 1) < argc)
-                {
-                    DestinationPath = argv[Index + 1];
-                    Index += 1;
-                }
-            break;
-            case L'a':
-                if ((Index + 1) < argc)
-                {
-                    ChAction = (UCHAR)argv[Index + 1][0];
-                    if ((ChAction >= '0') && (ChAction <= '5'))
-                    {
-                        Action = ChAction - '0';
-                    }
-                    Index += 1;
-                }
-            break;
+				break;
+			case L'o':
+				if ((Index + 1) < argc)
+				{
+					DestinationPath = argv[Index + 1];
+					Index += 1;
+				}
+				break;
+			case L'a':
+				if ((Index + 1) < argc)
+				{
+					ChAction = (UCHAR)argv[Index + 1][0];
+					if ((ChAction >= '0') && (ChAction <= '5'))
+					{
+						Action = ChAction - '0';
+					}
+					Index += 1;
+				}
+				break;
 			case L'b':
 				if ((Index + 1) < argc)
 				{
@@ -198,14 +197,14 @@ BOOLEAN bChoice = FALSE;
 					Index += 1;
 				}
 				break;
-            case L'?':
-                Help();
-                getchar();
-                exit(1);
-            break;
+			case L'?':
+				Help();
+				getchar();
+				exit(1);
+				break;
 			case L'e':
 				g_UseEXDi = TRUE;
-			break;
+				break;
 			case L'v':
 				if ((Index + 1) < argc)
 				{
@@ -221,7 +220,7 @@ BOOLEAN bChoice = FALSE;
 				if ((Index + 1) < argc)
 				{
 					ChAction = (UCHAR)argv[Index + 1][0];
-					if (ChAction == '0') 
+					if (ChAction == '0')
 					{
 						g_MemoryReadInterfaceType = ReadInterfaceWinHv;
 						g_MemoryWriteInterfaceType = WriteInterfaceWinHv;
@@ -238,21 +237,21 @@ BOOLEAN bChoice = FALSE;
 					}
 					Index += 1;
 				}
-			break;
+				break;
 			case L'z':
 				g_ExoPresent = TRUE;
 				g_MemoryReadInterfaceType = ReadInterfaceWinHv;
 				g_MemoryWriteInterfaceType = WriteInterfaceWinHv;
-			break;
-			default:	
 				break;
-        }
-    }
+			default:
+				break;
+			}
+	}
 }
 
 wmain(
 	_In_ int argc,
-	_In_ LPCWSTR *argv
+	_In_ LPCWSTR* argv
 )
 {
 	PULONG64 Partitions;
@@ -269,36 +268,41 @@ wmain(
 	WCHAR* FriendlyNameP = NULL;
 	ULONG64 SuspendWorker = 0;
 
-	wprintf(L"      LiveCloudKd - 2.0.0.20200308, beta\n"
-	L"      Microsoft Hyper-V Virtual Machine  Physical Memory Dumper & Live Kernel Debugger\n"
-	L"      Copyright (C) 2010-2020, Matthieu Suiche (@msuiche)\n"
-	L"      Copyright (C) 2020, Comae Technologies DMCC <http://www.comae.com> <support@comae.io>\n"
-	L"      All rights reserved.\n\n"
+	wprintf(L"      LiveCloudKd - 2.0.0.20240530\n"
+		L"      Microsoft Hyper-V Virtual Machine  Physical Memory Dumper & Live Kernel Debugger\n"
+		L"   Copyright (C) 2010-2024, Matthieu Suiche (www.msuiche.com)\n"
+		L"   Copyright (C) 2020, Comae Technologies DMCC <http://www.comae.com> <support@comae.io>\n\n"
 
-	L"      Contributor: Arthur Khudyaev (@gerhart_x)\n\n\n"
-	L"");
+		L"   Microsoft Hyper-V VM memory access operations based on hvlib developed by Arthur Khudyaev (@gerhart_x)\n"
+		L"   EXDi debug engine for Hyper-V virtual machine developed by Arthur Khudyaev (@gerhart_x)\n\n"
+		L"   Copyright (C) 2019-2024\n"
+		L"   All rights reserved.\n\n"
+		L"");
 
-    SetConsoleTitle(L"LiveCloudKd");
-    if (!ImportGlobalNtFunctions()) goto Exit;
-	
+	SetConsoleTitle(L"LiveCloudKd");
+
+	if (!ImportGlobalNtFunctions()) 
+		goto Exit;
+
 	ParseArguments(argc, argv);
-	
+
 	//
 	// Set default g_MemoryInterfaceType (if -m option was not specified)
 	//
 
 	SdkGetDefaultConfig(&g_VmOperationsConfig);
-		
+
 	if (g_MemoryReadInterfaceType != ReadInterfaceUnsupported)
 	{
 		g_VmOperationsConfig.ReadMethod = g_MemoryReadInterfaceType;
 		g_VmOperationsConfig.WriteMethod = g_MemoryWriteInterfaceType;
 	}
-	else {
+	else 
+	{
 		g_MemoryReadInterfaceType = g_VmOperationsConfig.ReadMethod;
 		g_MemoryWriteInterfaceType = g_VmOperationsConfig.WriteMethod;
 	}
-	
+
 	g_VmOperationsConfig.ForceFreezeCPU = g_ForceFreezeCpu;
 	g_VmOperationsConfig.PausePartition = g_ForceFreezeCpu;
 
@@ -315,14 +319,14 @@ wmain(
 	}
 
 	wprintf(L"\n   Virtual Machines:\n");
-    if (PartitionCount == 0)
-    {
-        Red(L"   --> No virtual machines running.\n");
-        goto Exit;
-    }
+	if (PartitionCount == 0)
+	{
+		Red(L"   --> No virtual machines running.\n");
+		goto Exit;
+	}
 
 	for (i = 0; i < PartitionCount; i += 1)
-	{		
+	{
 		ULONG64 PartitionId = 0;
 		WCHAR* VmTypeString = NULL;
 		SdkGetData(Partitions[i], InfoPartitionFriendlyName, &FriendlyNameP);
@@ -356,62 +360,62 @@ wmain(
 		goto Exit;
 	}
 
-    wprintf(L"   You selected the following virtual machine: ");
+	wprintf(L"   You selected the following virtual machine: ");
 
 	SdkGetData(Partitions[VmId], InfoPartitionFriendlyName, &FriendlyNameP);
-    Green(L"%s\n", FriendlyNameP);
+	Green(L"%s\n", FriendlyNameP);
 
-    wprintf(L"\n"
-            L"   Action List:\n");
-    wprintf(L"    --> [0] Live kernel debugger\n"
-            L"    --> [1] Linear physical memory dump\n"
-            L"    --> [2] Microsoft crash memory dump\n"
-			L"    --> [3] memory chunk dump (start position, size)\n"
-			L"    --> [4] RAW memory dump (start position, size)\n"
-			L"    --> [5] Resume partition\n");
+	wprintf(L"\n"
+		L"   Action List:\n");
+	wprintf(L"    --> [0] Live kernel debugger\n"
+		L"    --> [1] Linear physical memory dump\n"
+		L"    --> [2] Microsoft crash memory dump\n"
+		L"    --> [3] memory chunk dump (start position, size)\n"
+		L"    --> [4] RAW memory dump (start position, size)\n"
+		L"    --> [5] Resume partition\n");
 
-    if (Action == -1)
-    {
-        ActionId = 0;
+	if (Action == -1)
+	{
+		ActionId = 0;
 		FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 		wprintf(L"\n"
 			L"   Please select the Action ID\n"
 			L"   > ");
-        while ((ActionId < '0') || (ActionId > '5'))
-        {
+		while ((ActionId < '0') || (ActionId > '5'))
+		{
 			ActionId = _getch();
-        }
+		}
 
-        ActionId = ActionId - 0x30;
-    }
-    else
-    {
-        ActionId = Action;
-    }
+		ActionId = ActionId - 0x30;
+	}
+	else
+	{
+		ActionId = Action;
+	}
 
-    Green(L"%d\n", ActionId);
+	Green(L"%d\n", ActionId);
 
-    if (ActionId != 0 && ActionId != 5)
-    {
-        wprintf(L"\n"
-                L"   Destination path for the virtual machine physical memory dump (RAW dump)\n"
-                L"   > ");
+	if (ActionId != 0 && ActionId != 5)
+	{
+		wprintf(L"\n"
+			L"   Destination path for the virtual machine physical memory dump (RAW dump)\n"
+			L"   > ");
 
-        if (DestinationPath == NULL)
-        {
-            Handle = GetStdHandle(STD_OUTPUT_HANDLE);
-            Color = GetConsoleTextAttribute(Handle);
-            SetConsoleTextAttribute(Handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                _getws_s(Destination, (_countof(Destination) - sizeof(Destination[0])));
-            SetConsoleTextAttribute(Handle, Color);
-            DestinationPath = Destination;
+		if (DestinationPath == NULL)
+		{
+			Handle = GetStdHandle(STD_OUTPUT_HANDLE);
+			Color = GetConsoleTextAttribute(Handle);
+			SetConsoleTextAttribute(Handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+			_getws_s(Destination, (_countof(Destination) - sizeof(Destination[0])));
+			SetConsoleTextAttribute(Handle, Color);
+			DestinationPath = Destination;
 			FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-        }
-        else
-        {
-            Green(L"%s\n", DestinationPath);
-        }
-    }
+		}
+		else
+		{
+			Green(L"%s\n", DestinationPath);
+		}
+	}
 
 	ULONG64 BlockSize = 0;
 	ULONG64 BlockAddress = 0;
@@ -422,23 +426,23 @@ wmain(
 			L"   Set block size (bytes):\n"
 			L"   > ");
 
-			Handle = GetStdHandle(STD_OUTPUT_HANDLE);
-			Color = GetConsoleTextAttribute(Handle);
-			SetConsoleTextAttribute(Handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-				wscanf_s(L"%llx", &BlockSize);
-			SetConsoleTextAttribute(Handle, Color);
+		Handle = GetStdHandle(STD_OUTPUT_HANDLE);
+		Color = GetConsoleTextAttribute(Handle);
+		SetConsoleTextAttribute(Handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+		wscanf_s(L"%llx", &BlockSize);
+		SetConsoleTextAttribute(Handle, Color);
 
-			Green(L"BlockSize 0x%llx%\n", BlockSize);
+		Green(L"BlockSize 0x%llx%\n", BlockSize);
 
-			wprintf(L"\n"
-				L"   Set block's start physical address:\n"
-				L"   > ");
+		wprintf(L"\n"
+			L"   Set block's start physical address:\n"
+			L"   > ");
 
-			SetConsoleTextAttribute(Handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-				wscanf_s(L"%llx",&BlockAddress);
-			SetConsoleTextAttribute(Handle, Color);
+		SetConsoleTextAttribute(Handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+		wscanf_s(L"%llx", &BlockAddress);
+		SetConsoleTextAttribute(Handle, Color);
 
-			Green(L"BlockAddress: 0x%llx%\n", BlockAddress);
+		Green(L"BlockAddress: 0x%llx%\n", BlockAddress);
 	}
 
 	//
@@ -449,9 +453,9 @@ wmain(
 		WriteEXDiPartitionId(VmId);
 	}
 
-    //
-    // Now, we successfully have the Partition Handle. Let's look for Memory Blocks.
-    //
+	//
+	// Now, we successfully have the Partition Handle. Let's look for Memory Blocks.
+	//
 
 	if ((g_UseWinDbgLive == FALSE) & (ActionId != 4))
 	{
@@ -468,37 +472,37 @@ wmain(
 		CurrentPartition = Partitions[VmId]; // only because KdVersionBlock is auto detected by EXDi plugin
 	}
 
-    switch (ActionId)
-    {
-        case 0:
+	switch (ActionId)
+	{
+		case 0:
 			if (!DumpLiveVirtualMachine(CurrentPartition, VmId))
 				Red(L"   Cannot initialize crash dump header.\n");
-        break;
+			break;
 
-        case 1:
+		case 1:
 			if (!DumpVirtualMachine(CurrentPartition, DestinationPath))
 				Red(L"   Cannot get internal VM structures.\n");
-        break;
+			break;
 
-        case 2:
-            if (!DumpCrashVirtualMachine(CurrentPartition, DestinationPath))
+		case 2:
+			if (!DumpCrashVirtualMachine(CurrentPartition, DestinationPath))
 				Red(L"   Cannot initialize crash dump header.\n");
-		break;
+			break;
 		case 3:
 			if (!DumpMemoryBlock(CurrentPartition, DestinationPath, BlockAddress, BlockSize, MmStandard))
 				Red(L"   Problem with memory chunk dumping\n");
-        break;
+			break;
 		case 4:
 			if (!DumpMemoryBlock(CurrentPartition, DestinationPath, BlockAddress, BlockSize, MmNonKdbgPartition))
 				Red(L"   Problem with RAW memory dumping\n");
 			break;
 		case 5:
-			
+
 			SdkGetData(CurrentPartition, InfoIsNeedVmwpSuspend, &SuspendWorker);
 			if (!SdkControlVmState(CurrentPartition, ResumeVm, g_VmOperationsConfig.SuspendMethod, (BOOLEAN)SuspendWorker))
 				Red(L"   Problem with resuming selected VM\n");
-		break;
-    }
+			break;
+	}
 
 Exit:
 	SdkCloseAllPartitions();
@@ -510,5 +514,5 @@ Exit:
 		symbol = getchar();
 	} while (symbol != '\n' && symbol != EOF);
 
-    return TRUE;
+	return TRUE;
 }

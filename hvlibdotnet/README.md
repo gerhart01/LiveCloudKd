@@ -127,9 +127,7 @@ available values:
     HvddSettingsCrashDumpEmulation,
     HvddSettingsUseDecypheredKdbg,
     HvddBuilLabBuffer,
-    HvddHvddGetCr3byPid,
-    //Special set values
-    HvddSetMemoryBlock
+    HvddHvddGetCr3byPid
 ```
 
 Example:
