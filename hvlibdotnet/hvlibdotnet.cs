@@ -53,15 +53,7 @@ namespace Hvlibdotnet
             HvddSuspendedWorker,
             HvddIsContainer,
             HvddIsNeedVmwpSuspend,
-            HvddGuestOsType,
-            HvddSettingsCrashDumpEmulation,
-            HvddSettingsUseDecypheredKdbg,
-            HvddBuilLabBuffer,
-            HvddHvddGetCr3byPid,
-            HvddGetProcessesIds,
-            //Special set values
-            HvddSetMemoryBlock,
-            HvddEnlVmcsPointer
+            HvddGuestOsType
         }
 
         public enum READ_MEMORY_METHOD

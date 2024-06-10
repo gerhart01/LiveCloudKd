@@ -120,14 +120,7 @@ available values:
     HvddSize,
     HvddMemoryBlockCount,
     HvddSuspendedCores,
-    HvddSuspendedWorker,
-    HvddIsContainer,
-    HvddIsNeedVmwpSuspend,
-    HvddGuestOsType,
-    HvddSettingsCrashDumpEmulation,
-    HvddSettingsUseDecypheredKdbg,
-    HvddBuilLabBuffer,
-    HvddHvddGetCr3byPid
+    HvddSuspendedWorker
 ```
 
 Example:
