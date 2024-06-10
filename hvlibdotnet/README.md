@@ -103,31 +103,7 @@ available values:
     HvddMmPfnDatabase,
     HvddPsLoadedModuleList,
     HvddPsActiveProcessHead,
-    HvddNtBuildNumber,
-    HvddNtBuildNumberVA,
-    HvddDirectoryTableBase,
-    HvddRun,
-    HvddKdbgDataBlockArea,
-    HvddVmGuidString,
-    HvddPartitionHandle,
-    HvddKdbgContext,
-    HvddKdVersionBlock,
-    HvddMmPhysicalMemoryBlock,
-    HvddNumberOfPages,
-    HvddIdleKernelStack,
-    HvddSizeOfKdDebuggerData,
-    HvddCpuContextVa,
-    HvddSize,
-    HvddMemoryBlockCount,
-    HvddSuspendedCores,
-    HvddSuspendedWorker,
-    HvddIsContainer,
-    HvddIsNeedVmwpSuspend,
-    HvddGuestOsType,
-    HvddSettingsCrashDumpEmulation,
-    HvddSettingsUseDecypheredKdbg,
-    HvddBuilLabBuffer,
-    HvddHvddGetCr3byPid
+    HvddNtBuildNumber
 ```
 
 Example:

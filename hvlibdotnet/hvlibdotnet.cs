@@ -33,35 +33,7 @@ namespace Hvlibdotnet
             HvddMmPfnDatabase,
             HvddPsLoadedModuleList,
             HvddPsActiveProcessHead,
-            HvddNtBuildNumber,
-            HvddNtBuildNumberVA,
-            HvddDirectoryTableBase,
-            HvddRun,
-            HvddKdbgDataBlockArea,
-            HvddVmGuidString,
-            HvddPartitionHandle,
-            HvddKdbgContext,
-            HvddKdVersionBlock,
-            HvddMmPhysicalMemoryBlock,
-            HvddNumberOfPages,
-            HvddIdleKernelStack,
-            HvddSizeOfKdDebuggerData,
-            HvddCpuContextVa,
-            HvddSize,
-            HvddMemoryBlockCount,
-            HvddSuspendedCores,
-            HvddSuspendedWorker,
-            HvddIsContainer,
-            HvddIsNeedVmwpSuspend,
-            HvddGuestOsType,
-            HvddSettingsCrashDumpEmulation,
-            HvddSettingsUseDecypheredKdbg,
-            HvddBuilLabBuffer,
-            HvddHvddGetCr3byPid,
-            HvddGetProcessesIds,
-            //Special set values
-            HvddSetMemoryBlock,
-            HvddEnlVmcsPointer
+            HvddNtBuildNumber
         }
 
         public enum READ_MEMORY_METHOD
