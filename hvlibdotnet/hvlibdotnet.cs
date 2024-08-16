@@ -16,25 +16,6 @@ namespace Hvlibdotnet
         public Hvlib()
         {
         }
-        public enum HVDD_INFORMATION_CLASS
-        {
-            HvddKdbgData,
-            HvddPartitionFriendlyName,
-            HvddPartitionId,
-            HvddVmtypeString,
-            HvddStructure,
-            HvddKiProcessorBlock,
-            HvddMmMaximumPhysicalPage,
-            HvddKPCR,
-            HvddNumberOfCPU,
-            HvddKDBGPa,
-            HvddNumberOfRuns,
-            HvddKernelBase,
-            HvddMmPfnDatabase,
-            HvddPsLoadedModuleList,
-            HvddPsActiveProcessHead,
-            HvddNtBuildNumber
-        }
 
         public enum READ_MEMORY_METHOD
         {
@@ -68,6 +49,54 @@ namespace Hvlibdotnet
             Cr3Kernel = 1,
             Cr3SecureKenerl = 2,
             Cr3Hypervisor = 3
+        }
+
+        public enum HVDD_INFORMATION_CLASS
+        {
+            HvddKdbgData,
+            HvddPartitionFriendlyName,
+            HvddPartitionId,
+            HvddVmtypeString,
+            HvddStructure,
+            HvddKiProcessorBlock,
+            HvddMmMaximumPhysicalPage,
+            HvddKPCR,
+            HvddNumberOfCPU,
+            HvddKDBGPa,
+            HvddNumberOfRuns,
+            HvddKernelBase,
+            HvddMmPfnDatabase,
+            HvddPsLoadedModuleList,
+            HvddPsActiveProcessHead,
+            HvddNtBuildNumber,
+            HvddNtBuildNumberVA,
+            HvddDirectoryTableBase,
+            HvddRun,
+            HvddKdbgDataBlockArea,
+            HvddVmGuidString,
+            HvddPartitionHandle,
+            HvddKdbgContext,
+            HvddKdVersionBlock,
+            HvddMmPhysicalMemoryBlock,
+            HvddNumberOfPages,
+            HvddIdleKernelStack,
+            HvddSizeOfKdDebuggerData,
+            HvddCpuContextVa,
+            HvddSize,
+            HvddMemoryBlockCount,
+            HvddSuspendedCores,
+            HvddSuspendedWorker,
+            HvddIsContainer,
+            HvddIsNeedVmwpSuspend,
+            HvddGuestOsType,
+            HvddSettingsCrashDumpEmulation,
+            HvddSettingsUseDecypheredKdbg,
+            HvddBuilLabBuffer,
+            HvddHvddGetCr3byPid,
+            HvddGetProcessesIds,
+            //Special set values
+            HvddSetMemoryBlock,
+            HvddEnlVmcsPointer
         }
 
         [StructLayout(LayoutKind.Sequential)]

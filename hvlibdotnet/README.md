@@ -85,7 +85,7 @@ parameters:
 * **HvddInformationClass** - class of partition
 * **HvddInformation** - pointer to variable with result
 
-available values:
+available values of HVDD_INFORMATION_CLASS:
 
 ```csharp
     HvddKdbgData,
@@ -103,7 +103,35 @@ available values:
     HvddMmPfnDatabase,
     HvddPsLoadedModuleList,
     HvddPsActiveProcessHead,
-    HvddNtBuildNumber
+    HvddNtBuildNumber,
+    HvddNtBuildNumberVA,
+    HvddDirectoryTableBase,
+    HvddRun,
+    HvddKdbgDataBlockArea,
+    HvddVmGuidString,
+    HvddPartitionHandle,
+    HvddKdbgContext,
+    HvddKdVersionBlock,
+    HvddMmPhysicalMemoryBlock,
+    HvddNumberOfPages,
+    HvddIdleKernelStack,
+    HvddSizeOfKdDebuggerData,
+    HvddCpuContextVa,
+    HvddSize,
+    HvddMemoryBlockCount,
+    HvddSuspendedCores,
+    HvddSuspendedWorker,
+    HvddIsContainer,
+    HvddIsNeedVmwpSuspend,
+    HvddGuestOsType,
+    HvddSettingsCrashDumpEmulation,
+    HvddSettingsUseDecypheredKdbg,
+    HvddBuilLabBuffer,
+    HvddHvddGetCr3byPid,
+    HvddGetProcessesIds,
+    //Special set values
+    HvddSetMemoryBlock,
+    HvddEnlVmcsPointer
 ```
 
 Example:
@@ -127,16 +155,16 @@ Example:
 ```csharp
     VmListBox lbItem = new VmListBox();
     string VmName;
-    bool bResult = GetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddPartitionFriendlyName, ref VmName);
+    bool bResult = GetData((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddPartitionFriendlyName, ref VmName);
 
     string VmGuid;
-    bool bResult = GetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddVmGuidString, ref VmGuid);
+    bool bResult = GetData((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddVmGuidString, ref VmGuid);
 
     string VmType;
-    bool bResult = GetData2((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddVmtypeString, ref VmType);
+    bool bResult = GetData((UInt64)arPartition[i], HVDD_INFORMATION_CLASS.HvddVmtypeString, ref VmType);
 
     UInt64 PartitionId;
-    bool bResult = GetData2(arPartition[i], HVDD_INFORMATION_CLASS.HvddPartitionId, PartitionId);
+    bool bResult = GetData(arPartition[i], HVDD_INFORMATION_CLASS.HvddPartitionId, ref PartitionId);
 ```
 
 result type: UInt64 from GetData2 and boolean from GetData2 
