@@ -341,11 +341,14 @@ VOID DeviceHVMM_Close(_Inout_ PLC_CONTEXT ctxLC)
 {
     PDEVICE_CONTEXT_HVMM ctx = (PDEVICE_CONTEXT_HVMM)ctxLC->hDevice;
 
-    if (0 == --g_cDeviceHVMM) {
-        DeviceHVMM_SvcClose();
-    }
+    if (g_cDeviceHVMM > 0)
+        g_cDeviceHVMM -= 1;
+
+    if (g_cDeviceHVMM)
+        return;
     
-    if (ctx) {
+    if (ctx) 
+    {
         SdkClosePartition((ULONG64)ctx->Partition);
 
         if (ctx->hFile)

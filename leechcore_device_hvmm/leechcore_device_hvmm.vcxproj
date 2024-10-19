@@ -236,7 +236,7 @@
       <AdditionalDependencies>$(SolutionDir)files\hvlib.lib;leechcore.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(OutDir)leechcore_device_hvmm.dll" "$(SolutionDir)files" /y</Command>
+      <Command>copy "$(OutDir)leechcore_device_hvmm.dll" "$(SolutionDir)files\Release" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
