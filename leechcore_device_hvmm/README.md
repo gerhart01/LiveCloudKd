@@ -8,7 +8,7 @@ Sources was taken from https://github.com/ufrisk/LeechCore
 
 Copy leechcore_device_hvmm.dll with hvlib.dll and hvmm.sys to MemProcFS folder
 
-start MemProcFs:
+start MemProcFS:
 ```
 MemProcFS.exe -device hvmm -v
 ```
@@ -20,6 +20,3 @@ you must see something like that:
 Next you can go to M: driver and use pypykatz plugin, f.e.
 
 ![](./images/2.png)
-
-Also you can read instructions about plugin usage at:
-https://github.com/ufrisk/LeechCore/wiki/Device_LiveCloudKd

@@ -21,6 +21,9 @@
     <ClInclude Include="..\LeechCore\leechcore\leechcore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="leechcore_device_hvmm_misc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="leechcore_device_hvmm.c">
@@ -30,6 +33,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\LeechCore\leechcore\util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="leechcore_device_hvmm_misc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

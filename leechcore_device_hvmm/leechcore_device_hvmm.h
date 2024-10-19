@@ -1,9 +1,9 @@
-// device_hvmm.h : definitions related the Hyper-V live memory diving.
+// leechcore_device_hvmm.h : definitions related the Hyper-V live memory diving.
 //
-// (c) Ulf Frisk, 2018
+// (c) Ulf Frisk, 2018-2024
 // Author: Ulf Frisk, pcileech@frizk.net
 //
-// (c) Arthur Khudyaev, 2020
+// (c) Arthur Khudyaev, 2020-2024
 // Author: Arthur Khudyaev, @gerhart_x
 //
 
@@ -14,6 +14,7 @@
 #include "leechcore_device.h"
 #include "conio.h"
 #include "shlwapi.h"
+#include "leechcore_device_hvmm_misc.h"
 
 //
 // The number of runs may vary if Dynamic Memory is enabled inside the Hyper-V virtual machine.
@@ -99,6 +100,6 @@ BOOLEAN HVMM_WriteFile(
 	UINT64 nNumberOfBytesToRead
 );
 
-BOOL IsDigital(PLC_CONTEXT ctxLC, PCHAR str, ULONG64 len);
+//BOOL IsDigital(PLC_CONTEXT ctxLC, PCHAR str, ULONG64 len);
 
 #endif

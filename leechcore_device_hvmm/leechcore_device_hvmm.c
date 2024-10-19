@@ -1,5 +1,5 @@
-// leechcore_device_hvmm.c : implementation for Hyper-V memory access using Hyper-V memory access library
-// Please refer to the hvmm/ folder for more information or its original repository:
+// leechcore_device_hvmm.c : implementation for MemProcFS Hyper-V memory access using Hyper-V memory access library (hvlib.dll)
+// Please refer to the hvmm and LiveCloudKdSdk folder for more information or its original repository:
 // https://github.com/gerhart01/LiveCloudKd
 //
 // (c) Ulf Frisk, 2018-2024
@@ -20,6 +20,8 @@
 #include "shlwapi.h"
 #include "psapi.h"
 
+DWORD g_cDeviceHVMM = 0;
+
 
 //-----------------------------------------------------------------------------
 // GENERAL FUNCTIONALITY BELOW:
@@ -27,29 +29,6 @@
 
 extern READ_MEMORY_METHOD g_MemoryReadInterfaceType;
 extern WRITE_MEMORY_METHOD g_MemoryWriteInterfaceType;
-
-BOOL IsDigital(PLC_CONTEXT ctxLC, PCHAR str, ULONG64 len)
-{
-    for (ULONG i = 0; i < len; i++)
-    {
-        if ((str[i] < '0') || (str[i] > '9'))
-        {
-            lcprintf(ctxLC,
-                "DEVICE_HVMM: ERROR: vmid is not integer: %s\n",
-                str);
-            return FALSE;
-        }
-    }
-
-    return TRUE;
-}
-
-BOOL IsRemoteMode()
-{
-    WCHAR wszImageFileName[MAX_PATH] = { 0 };
-    BOOL fIsAgent = (GetProcessImageFileNameW((HANDLE)-1, wszImageFileName, _countof(wszImageFileName)) >= 14) && !_wcsicmp(wszImageFileName + wcslen(wszImageFileName) - 14, L"LeechAgent.exe");
-    return fIsAgent;
-}
 
 
 VOID DeviceHVMM_WriteScatter(_In_ PLC_CONTEXT ctxLC, _In_ DWORD cpMEMs, _Inout_ PPMEM_SCATTER ppMEMs)
@@ -192,72 +171,6 @@ VOID DeviceHVMM_SvcClose()
     }
 }
 
-ULONG GetNumberFromParam(_In_ PLC_CONTEXT ctxLC, PCHAR pId, _In_ PCSTR pszSrch)
-{
-    PCHAR pDelim = NULL;
-    BOOLEAN bResult = FALSE;
-    ULONG64 uParamIdLength = 0;
-    CHAR szParamId[10] = { 0 };
-    ULONG64 sizeOfParam = strlen(pszSrch);
-    ULONG szResult = 0;
-    
-    PDEVICE_CONTEXT_HVMM ctx = (PDEVICE_CONTEXT_HVMM)ctxLC->hDevice;
-
-    pId = StrStrIA(ctxLC->Config.szDevice, pszSrch);
-
-    if (pId)
-    {
-        pDelim = StrStrIA(pId, HVMM_PARAM_DELIMITER);
-
-        if (pDelim)
-        {
-            uParamIdLength = pDelim - pId - sizeOfParam;
-            if (uParamIdLength < 6)
-            {
-                memcpy(szParamId, pId + sizeOfParam, uParamIdLength);
-
-                if (!IsDigital(ctxLC, szParamId, uParamIdLength))
-                    return -1;
-
-                szResult = atoi(szParamId);
-                ctx->VmidPreselected = TRUE;
-                bResult = TRUE;
-            }
-            else
-            {
-                lcprintf(ctxLC,
-                    "DEVICE_HVMM: ERROR: vmid length is too big: %d\n",
-                    uParamIdLength);
-                return -1;
-            }
-        }
-        else
-        {
-            uParamIdLength = strlen(ctxLC->Config.szDevice) - (pId - ctxLC->Config.szDevice) - sizeOfParam;
-
-            strcpy_s(szParamId, _countof(szParamId), pId + sizeOfParam);
-
-            if (!IsDigital(ctxLC, szParamId, uParamIdLength))
-                return FALSE;
-
-            if (uParamIdLength < 6)
-            {
-                szResult = atoi(szParamId);
-                ctx->VmidPreselected = TRUE;
-                bResult = TRUE;
-            }
-            else
-            {
-                lcprintf(ctxLC,
-                    "DEVICE_HVMM: ERROR: vmid length is too big: %d\n",
-                    uParamIdLength);
-                return -1;
-            }
-        }
-    }
-    return szResult;
-}
-
 BOOL DeviceHVMM_CheckParams(_In_ PLC_CONTEXT ctxLC)
 {
     ULONG64 uVmidLength = 0;
@@ -266,6 +179,8 @@ BOOL DeviceHVMM_CheckParams(_In_ PLC_CONTEXT ctxLC)
     PCHAR pLogLevel = NULL;
     PCHAR pDelim = NULL;
     BOOLEAN bResult = FALSE;
+
+    //_getch();
 
     ULONG64 id_size = sizeof(HVMM_ID_PARAM_NAME) - 1;
     PDEVICE_CONTEXT_HVMM ctx = (PDEVICE_CONTEXT_HVMM)ctxLC->hDevice;
@@ -309,46 +224,6 @@ BOOL DeviceHVMM_CheckParams(_In_ PLC_CONTEXT ctxLC)
     }
 
     return bResult;
-}
-
-/*
-* Create HVMM driver loader service and load the kernel driver
-* into the kernel. Upon fail it's guaranteed that no lingering service exists.
-*/
-
-HANDLE GetHvmmHandle(_In_ PLC_CONTEXT ctxLC)
-{
-    HANDLE hDevice = INVALID_HANDLE_VALUE;  
-
-    hDevice = CreateFileA(DEVICEHVMM_OBJECT,          
-        GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ | 
-        FILE_SHARE_WRITE,
-        NULL,             
-        OPEN_EXISTING,    
-        FILE_ATTRIBUTE_NORMAL,               
-        0);           
-
-    if (hDevice == INVALID_HANDLE_VALUE)   
-        return NULL;
-
-    lcprintf(ctxLC, "DEVICE_HVMM: driver is already loaded\n");
-
-    return hDevice;
-}
-
-BOOLEAN GetHvmmPresent(_In_ PLC_CONTEXT ctxLC)
-{
-    HANDLE hDevice = GetHvmmHandle(ctxLC);
-    BOOLEAN bResult = FALSE;
-
-    if (hDevice)
-    {
-        CloseHandle(hDevice);
-        return TRUE;
-    }
-
-    return FALSE;
 }
 
 _Success_(return)
@@ -465,6 +340,10 @@ BOOL DeviceHVMM_SvcStart(_In_ PLC_CONTEXT ctxLC)
 VOID DeviceHVMM_Close(_Inout_ PLC_CONTEXT ctxLC)
 {
     PDEVICE_CONTEXT_HVMM ctx = (PDEVICE_CONTEXT_HVMM)ctxLC->hDevice;
+
+    if (0 == --g_cDeviceHVMM) {
+        DeviceHVMM_SvcClose();
+    }
     
     if (ctx) {
         SdkClosePartition((ULONG64)ctx->Partition);
@@ -527,14 +406,14 @@ EXPORTED_FUNCTION BOOL LcPluginCreate(_Inout_ PLC_CONTEXT ctxLC, _Out_opt_ PPLC_
     PDEVICE_CONTEXT_HVMM ctx;
 
     ctx = (PDEVICE_CONTEXT_HVMM)LocalAlloc(LMEM_ZEROINIT, sizeof(DEVICE_CONTEXT_HVMM));
-    if (!ctx) { return FALSE; }
-
-    // 1: initialize core context.
+    
+    if (!ctx) 
+        return FALSE;
 
     ctxLC->hDevice = (HANDLE)ctx;
-    // set callback functions and fix up config
-
     ctxLC->Config.fVolatile = TRUE;
+
+    g_cDeviceHVMM++;
 
     ctxLC->pfnClose = DeviceHVMM_Close;
     ctxLC->pfnReadScatter = DeviceHVMM_ReadScatter;
@@ -551,7 +430,6 @@ EXPORTED_FUNCTION BOOL LcPluginCreate(_Inout_ PLC_CONTEXT ctxLC, _Out_opt_ PPLC_
         {
             ctx->ListVm = TRUE;
 
-            // 3: load hvmm kernel driver.
             result = DeviceHVMM_SvcStart(ctxLC);
             if (!result) {
                 lcprintf(ctxLC, "DEVICE_HVMM: FAILED: failed to initialize the driver.\n");
@@ -613,16 +491,13 @@ EXPORTED_FUNCTION BOOL LcPluginCreate(_Inout_ PLC_CONTEXT ctxLC, _Out_opt_ PPLC_
     {
         DeviceHVMM_CheckParams(ctxLC);
 
-        // 3: load hvmm kernel driver.
-
         result = DeviceHVMM_SvcStart(ctxLC);
         if (!result) {
             lcprintf(ctxLC, "DEVICE_HVMM: FAILED: Failed to initialize the driver.\n");
             goto fail;
         }
     }
-    
-    // 4: retrieve memory map.
+   
     result = DeviceHVMM_GetMemoryInformation(ctxLC);
     if (!result) {
         lcprintf(ctxLC, "DEVICE_HVMM: FAILED: Unable to parse guest memory map.\n");

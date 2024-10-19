@@ -82,7 +82,7 @@ BOOL HVMMStart(_Inout_ PLC_CONTEXT ctxLC)
 	PDEVICE_CONTEXT_HVMM ctx = (PDEVICE_CONTEXT_HVMM)ctxLC->hDevice;
 
 	wprintf(L"\n"
-		L"   Microsoft Hyper-V Virtual Machine plugin 1.2.20240319(beta) for MemProcFS (by Ulf Frisk).\n"
+		L"   Microsoft Hyper-V Virtual Machine plugin 1.2.20240329(beta) for MemProcFS (by Ulf Frisk).\n"
 		L"\n"
 		L"   plugin parameters:\n"
 		L"      hvmm://id=<vm id number>\n"
@@ -92,6 +92,8 @@ BOOL HVMMStart(_Inout_ PLC_CONTEXT ctxLC)
 		L"      hvmm://loglevel=<log level number>\n"
 		L"   Example: MemProcFS.exe -device hvmm://listvm\n"
 		L"\n");
+
+	//_getch();
 
 	SdkGetDefaultConfig(&VmOperationsConfig);
 
@@ -153,13 +155,13 @@ BOOL HVMMStart(_Inout_ PLC_CONTEXT ctxLC)
 		WCHAR* VmTypeString = NULL;
 		char* NtBuildLab = NULL;
 
-		SdkGetData(Partitions[i], HvddPartitionFriendlyName, &FriendlyNameP);
-		SdkGetData(Partitions[i], HvddPartitionId, &PartitionId);
-		SdkGetData(Partitions[i], HvddVmtypeString, &VmTypeString);
+		SdkGetData(Partitions[i], InfoPartitionFriendlyName, &FriendlyNameP);
+		SdkGetData(Partitions[i], InfoPartitionId, &PartitionId);
+		SdkGetData(Partitions[i], InfoVmtypeString, &VmTypeString);
 		
 		if (ctx->EnumGuestOsBuild){
 			SdkSelectPartition(Partitions[i]);
-			SdkGetData(Partitions[i], HvddBuilLabBuffer, &NtBuildLab);
+			SdkGetData(Partitions[i], InfoBuilLabBuffer, &NtBuildLab);
 		}
 
 		if (PartitionId != 0)
@@ -241,7 +243,7 @@ BOOL HVMMStart(_Inout_ PLC_CONTEXT ctxLC)
 
 	wprintf(L"   You selected the following virtual machine: ");
 
-	SdkGetData(Partitions[VmId], HvddPartitionFriendlyName, &FriendlyNameP);
+	SdkGetData(Partitions[VmId], InfoPartitionFriendlyName, &FriendlyNameP);
 	Green(L"%s\n", FriendlyNameP);
 
 	g_Partition = Partitions[VmId];
@@ -254,16 +256,16 @@ BOOL HVMMStart(_Inout_ PLC_CONTEXT ctxLC)
 
 	ctx->Partition = g_Partition;
 
-	SdkGetData(g_Partition, HvddMmMaximumPhysicalPage, &ctx->paMax);
+	SdkGetData(g_Partition, InfoMmMaximumPhysicalPage, &ctx->paMax);
 	ctx->paMax *= PAGE_SIZE;
 
 	ULONG64 NumberOfCPU = 0;
 
-	SdkGetData(g_Partition, HvddNumberOfCPU, &NumberOfCPU);
-	SdkGetData(g_Partition, HvddDirectoryTableBase, &ctx->MemoryInfo.CR3.QuadPart);
+	SdkGetData(g_Partition, InfoNumberOfCPU, &NumberOfCPU);
+	SdkGetData(g_Partition, InfoDirectoryTableBase, &ctx->MemoryInfo.CR3.QuadPart);
 
 	GUEST_TYPE GuestOsType;
-	GuestOsType = SdkGetData2(g_Partition, HvddGuestOsType);
+	GuestOsType = SdkGetData2(g_Partition, InfoGuestOsType);
 
 	if (GuestOsType == MmStandard) 
 	{
@@ -273,33 +275,33 @@ BOOL HVMMStart(_Inout_ PLC_CONTEXT ctxLC)
 
 		PULONG64 KPCR = NULL;
 
-		SdkGetData(g_Partition, HvddKPCR, &KPCR);
+		SdkGetData(g_Partition, InfoKPCR, &KPCR);
 
 		for (size_t i = 0; i < NumberOfCPU; i++)
 		{
 			ctx->MemoryInfo.KPCR[i].QuadPart = KPCR[i];
 		}
 
-		SdkGetData(g_Partition, HvddKDBGPa, &ctx->MemoryInfo.KDBG.QuadPart);
-		SdkGetData(g_Partition, HvddNumberOfRuns, &ctx->MemoryInfo.NumberOfRuns.QuadPart);
-		SdkGetData(g_Partition, HvddKernelBase, &ctx->MemoryInfo.KernBase.QuadPart);
+		SdkGetData(g_Partition, InfoKDBGPa, &ctx->MemoryInfo.KDBG.QuadPart);
+		SdkGetData(g_Partition, InfoNumberOfRuns, &ctx->MemoryInfo.NumberOfRuns.QuadPart);
+		SdkGetData(g_Partition, InfoKernelBase, &ctx->MemoryInfo.KernBase.QuadPart);
 
 		ULONG64 MmPfnDatabase = 0;
 		ULONG64 PsLoadedModuleList = 0;
 		ULONG64 PsActiveProcessHead = 0;
-		SdkGetData(g_Partition, HvddMmPfnDatabase, &MmPfnDatabase);
-		SdkGetData(g_Partition, HvddPsLoadedModuleList, &PsLoadedModuleList);
-		SdkGetData(g_Partition, HvddPsActiveProcessHead, &PsActiveProcessHead);
+		SdkGetData(g_Partition, InfoMmPfnDatabase, &MmPfnDatabase);
+		SdkGetData(g_Partition, InfoPsLoadedModuleList, &PsLoadedModuleList);
+		SdkGetData(g_Partition, InfoPsActiveProcessHead, &PsActiveProcessHead);
 
 		ctx->MemoryInfo.PfnDataBase.QuadPart = SdkGetPhysicalAddress(g_Partition, MmPfnDatabase, MmVirtualMemory);
 		ctx->MemoryInfo.PsLoadedModuleList.QuadPart = SdkGetPhysicalAddress(g_Partition, PsLoadedModuleList, MmVirtualMemory);
 		ctx->MemoryInfo.PsActiveProcessHead.QuadPart = SdkGetPhysicalAddress(g_Partition, PsActiveProcessHead, MmVirtualMemory);
 
-		SdkGetData(g_Partition, HvddNtBuildNumber, &ctx->MemoryInfo.NtBuildNumber.LowPart);
-		SdkGetData(g_Partition, HvddNtBuildNumberVA, &ctx->MemoryInfo.NtBuildNumberAddr.QuadPart);
+		SdkGetData(g_Partition, InfoNtBuildNumber, &ctx->MemoryInfo.NtBuildNumber.LowPart);
+		SdkGetData(g_Partition, InfoNtBuildNumberVA, &ctx->MemoryInfo.NtBuildNumberAddr.QuadPart);
 
 		PULONG64 pRun = NULL;
-		SdkGetData(g_Partition, HvddRun, &pRun);
+		SdkGetData(g_Partition, InfoRun, &pRun);
 
 		RtlCopyMemory(&ctx->MemoryInfo.Run, pRun, ctx->MemoryInfo.NumberOfRuns.QuadPart * sizeof(ULONG64) * 3 + sizeof(ULONG64) * 3);
 
