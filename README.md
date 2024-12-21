@@ -2,14 +2,14 @@ This is fork of LiveCloudKd, early developed by Matt Suiche [(www.msuiche.com)](
 
 ## LiveCloudKd (2024)
 
-LiveCloudKd is tool, that allows you connect to Hyper-V guest VM with kd.exe (or WinDBG.exe and WinDBG with modern UI). 
+LiveCloudKd is tool, that allows you connect to Hyper-V guest VM with kd.exe (or WinDBG and WinDBG with modern UI). 
 
 Also you can use LiveCloudKd EXDi plugin for attaching to Hyper-V VM.  
 
 Tool uses Hyper-V Memory Manager plugin for operations with Hyper-V memory.
 Tool has additional options in compare with LiveKd from Microsoft Sysinternals Suite:
 
-1. Write capabilities (you can write to Hyper-V VM in virtual and physical address space using native WinDBG commands)
+1. Write capabilities (you can write to Hyper-V VM in virtual and physical address space using native WinDBG commands or using Hvlib API)
 2. More performance
 3. Support Hyper-V VM with nested option enabled on Intel based CPU
 4. Support multilanguage OS
@@ -25,14 +25,16 @@ LiveCloudKd based on hvlib.dll library (Hyper-V memory manager plugin). Other to
 LiveCloudKd EXDi debugger. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.0.22021109/LiveCloudKd.EXDi.debugger.v1.0.22021109.zip). [Readme](https://github.com/gerhart01/LiveCloudKd/blob/master/ExdiKdSample/LiveDebugging.md)    
 Hyper-V Virtual Machine plugin for MemProcFS. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.2.20240228/leechcore_hyperv_plugin_28.02.2024.zip)  
 Hyper-V Memory Manager plugin for volatility. [Download](https://github.com/gerhart01/Hyper-V-Tools/releases/download/v1.0.20240427/Hyper-V.Memory.Manager.plugin.for.volatility.v1.0.20240427.zip)  
+HyperViews. [Download](https://github.com/gerhart01/Hyper-V-Tools/tree/main/HyperViews)
+Hyper-V Memory Manager module for Powershell. [Download](https://github.com/gerhart01/Hyper-V-Tools/tree/main/HvlibPowershell)
 
 Methods for accessing guest Hyper-V VM memory: 
 
 	ReadInterfaceWinHv - uses Hyper-V hypercall for reading guest OS memory. Slow, but robust method; 
-	ReadInterfaceHvmmDrvInternal - read data directly from kernel memory. Faster, then ReadInterfaceWinHv, but uses undocument structures). See description of -m option. Default reading method is ReadInterfaceHvmmDrvInternal.
+	ReadInterfaceHvmmDrvInternal - read data directly from kernel memory. Faster, then ReadInterfaceWinHv, but uses undocument structures). Default reading method is ReadInterfaceHvmmDrvInternal.
 	
 	WriteInterfaceWinHv - uses Hyper-V hypercall for writing to guest OS memory.
-	WriteInterfaceHvmmDrvInternal - write data directly to kernel memory. Faster, then WriteInterfaceWinHv, but uses undocument structures). See description of -m option. Default writing method is WriteInterfaceHvmmDrvInternal.
+	WriteInterfaceHvmmDrvInternal - write data directly to kernel memory. Faster, then WriteInterfaceWinHv, but uses undocument structures). Default writing method is WriteInterfaceHvmmDrvInternal.
 	
 
 LiveCloudKd was tested on Windows Server 2016, Windows Server 2019, Windows Server 2022, Windows 10 and Windows 11 operations system (some of preview versions of Windows 11 and Windows Server vNext including Windows Server 2025)
@@ -48,15 +50,15 @@ setx /m _NT_SYMBOL_PATH SRV*C:\Symbols*https://msdl.microsoft.com/download/symbo
 For launch:
 
 1. Extract LiveCloudKd.exe, hvlib.dll, hvmm.sys to WinDBG x64 folder (tested on WinDBG from WDK 1809 - 23H2) or separate folder (use /y key for specify directory with WinDBG). 
-   Also LiveCloudKd can find path to WinDBG, if it was installed with Windows WDK or SDK
+   Also LiveCloudKd can find path to WinDBG, if it was installed with Windows WDK or SDK.
 2. Launch LiveCloudKd.exe with admin rights (It needs Visual Studio 2022 runtime libraries - https://aka.ms/vs/17/release/vc_redist.x64.exe).
-3. Choose Hyper-V virtual machine for inspection.  
+3. Choose Hyper-V virtual machine or local Windows for inspection.  
 
 When starting LiveCloudKd searches WinDBG in next steps:
 
 1. Standard Windows SDK installation folder (using registry key).
 2. Windows Registry HKLM\Software\LiveCloudKd\Parameters\WinDbgPath key. See RegParam.key for instance. 
-3. Set /y parameter with WinDBG path, for instance: 
+3. If /y parameter is set with WinDBG path LiveCloudKd try to use it.
 
 ```
 LiveCloudKd /y C:\Microsoft\WinDBG
@@ -64,7 +66,7 @@ LiveCloudKd /y C:\Microsoft\WinDBG
 
 4. If previous result is not successful, LiveCloudKd tries to run kd.exe from same folder.
 
-Performance comparison with LiveKd from Sysinternals Suite, at the time of release (LiveCloudKd is more performance: about 1000 times using ReadInterfaceHvmmDrvInternal interface):
+Performance comparison with LiveKd from Sysinternals Suite (LiveCloudKd is more performance: about 1000 times using ReadInterfaceHvmmDrvInternal interface):
 
 ![](images/image03.png)
 
@@ -84,13 +86,25 @@ LiveCloudKd options:
       /m        Memory access type.
                    0 - Winhvr.sys interface
                    1 - Raw memory interface (hvmm.sys)
+                   2 - Local OS
       /n        Pre-selected number of VM.
-      /o        Destination path for the output file (Action 1 - 5).
+      /o        Destination path for the output file (Action 2 - 5).
       /p        Pause partition.
       /v        Verbose output.
-      /w        Run Windbg instead of Kd (Kd is the default).
+      /w        Run WinDBG instead of Kd (Kd is the default).
       /y        Set path to WinDBG or WinDBG with modern UI (for start EXDi plugin)
       /?        Print this help.
 ``` 
+
+EXDI module can get instructions for writing some bytes to Hyper-V virtual machine memory (depending of WinDBG ot DBGx version), therefore writing memory capabilities are disabled by default.
+To enable it enter command:
+```
+wrmsr 0x1112 1
+```
+disable
+
+```
+wrmsr 0x1112 0
+```
 
 Project uses diStorm3 library (BSD license) by [Gil Dabah](https://twitter.com/_arkon): [Distorm project](https://github.com/gdabah/distorm)
