@@ -2,13 +2,13 @@
 // Please refer to the hvmm and LiveCloudKdSdk folder for more information or its original repository:
 // https://github.com/gerhart01/LiveCloudKd
 //
-// (c) Ulf Frisk, 2018-2024
+// (c) Ulf Frisk, 2018-2025
 // Author: Ulf Frisk, pcileech@frizk.net
 //
-// (c) Arthur Khudyaev, 2018-2024
+// (c) Arthur Khudyaev, 2018-2025
 // Author: Arthur Khudyaev, @gerhart_x
 //
-// (c) Matt Suiche, 2018-2024
+// (c) Matt Suiche, 2018-2025
 // Author: Matt Suiche, www.msuiche.com
 //
 
@@ -177,10 +177,9 @@ BOOL DeviceHVMM_CheckParams(_In_ PLC_CONTEXT ctxLC)
     CHAR szVmid[10] = { 0 };
     PCHAR pVmid = NULL;
     PCHAR pLogLevel = NULL;
+    PCHAR pMemoryType = NULL;
     PCHAR pDelim = NULL;
     BOOLEAN bResult = FALSE;
-
-    //_getch();
 
     ULONG64 id_size = sizeof(HVMM_ID_PARAM_NAME) - 1;
     PDEVICE_CONTEXT_HVMM ctx = (PDEVICE_CONTEXT_HVMM)ctxLC->hDevice;
@@ -202,6 +201,31 @@ BOOL DeviceHVMM_CheckParams(_In_ PLC_CONTEXT ctxLC)
     if (pLogLevel)
     {
         ctx->LogLevel = GetNumberFromParam(ctxLC, pLogLevel, HVMM_LOGLEVEL_PARAM_NAME);
+        ctx->bIsLogLevelSet = TRUE;
+        bResult = TRUE;
+    }
+
+    pMemoryType = StrStrIA(ctxLC->Config.szDevice, HVMM_MEMORY_TYPE_PARAM_NAME);
+
+    if (pMemoryType)
+    {
+        ULONG64 memType = GetNumberFromParam(ctxLC, pMemoryType, HVMM_MEMORY_TYPE_PARAM_NAME);
+
+        switch (memType)
+        {
+            case 0: 
+                ctx->MemoryType = ReadInterfaceWinHv;
+                break;
+            case 1:
+                ctx->MemoryType = ReadInterfaceHvmmDrvInternal;
+                break;
+            case 2:
+                ctx->MemoryType = ReadInterfaceHvmmLocal;
+                break;
+            default:
+                break;
+        }
+        
         bResult = TRUE;
     }
 
@@ -234,8 +258,6 @@ BOOL DeviceHVMM_SvcStart(_In_ PLC_CONTEXT ctxLC)
     CHAR szDriverFile[MAX_PATH] = { 0 };
     FILE* pDriverFile = NULL;
     HMODULE hModuleLeechCore;
-
-
     SC_HANDLE hSCM = 0, hSvcHvmm = 0;
 
     ctx->hFile = GetHvmmHandle(ctxLC);
@@ -443,7 +465,7 @@ EXPORTED_FUNCTION BOOL LcPluginCreate(_Inout_ PLC_CONTEXT ctxLC, _Out_opt_ PPLC_
             result = DeviceHVMM_ListVM(ctxLC);
 
             if (!result) {
-                lcprintf(ctxLC, "DEVICE_HVMM: FAILED: failed list vm.\n");
+                lcprintf(ctxLC, "DEVICE_HVMM: FAILED: failed list VMs.\n");
                 goto fail;
             }
 

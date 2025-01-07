@@ -11,3 +11,6 @@ BOOL IsRemoteMode();
 ULONG GetNumberFromParam(_In_ PLC_CONTEXT ctxLC, PCHAR pId, _In_ PCSTR pszSrch);
 BOOLEAN GetHvmmPresent(_In_ PLC_CONTEXT ctxLC);
 HANDLE GetHvmmHandle(_In_ PLC_CONTEXT ctxLC);
+USHORT GetConsoleTextAttribute(_In_ HANDLE hConsole);
+VOID Green(LPCWSTR Format, ...);
+BOOLEAN AsciiToUnicode(PCHAR Asciistring, PWCHAR Unistring, ULONG unistring_size);

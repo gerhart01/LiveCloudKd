@@ -17,10 +17,10 @@
 #include "leechcore_device_hvmm_misc.h"
 
 //
-// The number of runs may vary if Dynamic Memory is enabled inside the Hyper-V virtual machine.
+// The number of runs may vary if Dynamic Memory is enabled inside Hyper-V virtual machine.
 //
 
-#define MAX_NUMBER_OF_RUNS MAX_NUMBER_OF_RUNS_BYTES / sizeof(PHYSICAL_MEMORY_RANGE) //correlation with MAX_NUMBER_OF_RUNS_BYTES from LiveCloudKdSdkMisc.h
+#define MAX_NUMBER_OF_RUNS MAX_NUMBER_OF_RUNS_BYTES / sizeof(PHYSICAL_MEMORY_RANGE) //correlation with MAX_NUMBER_OF_RUNS_BYTES from HvlibEnumPublic.h
 
 #define HVMM_PROBE_MAXPAGES 0x1
 
@@ -36,14 +36,15 @@
 // MemProcFs param values
 //
 
-#define HVMM_ID_PARAM_NAME                      "id="
 #define HVMM_PARAM_NAME                         "hvmm://"
 #define HVMM_PARAM_DELIMITER                    ","
-
 #define HVMM_LISTVM_PARAM_NAME                  "listvm"
 #define HVMM_UNIX_PARAM_NAME                    "unix"
-#define HVMM_LOGLEVEL_PARAM_NAME                "loglevel"
 #define HVMM_ENUM_GUEST_OS_BUILD_PARAM_NAME     "enumguestosbuild"
+
+#define HVMM_ID_PARAM_NAME                      "id="
+#define HVMM_MEMORY_TYPE_PARAM_NAME             "m="
+#define HVMM_LOGLEVEL_PARAM_NAME                "loglevel="
 
 typedef struct pmem_info_runs {
     __int64 start;
@@ -74,6 +75,8 @@ typedef struct tdDEVICE_CONTEXT_HVMM {
     BOOLEAN ListVm;
     BOOLEAN SimpleMemory;
     ULONG LogLevel;
+    BOOLEAN bIsLogLevelSet;
+    READ_MEMORY_METHOD MemoryType;
     BOOLEAN EnumGuestOsBuild;
     BOOLEAN RemoteMode;
     LPWSTR szVmNamesList;
@@ -99,7 +102,5 @@ BOOLEAN HVMM_WriteFile(
 	PVOID lpBuffer,
 	UINT64 nNumberOfBytesToRead
 );
-
-//BOOL IsDigital(PLC_CONTEXT ctxLC, PCHAR str, ULONG64 len);
 
 #endif

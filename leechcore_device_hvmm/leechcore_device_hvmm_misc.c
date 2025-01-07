@@ -1,3 +1,17 @@
+// leechcore_device_hvmm_misc.c : implementation for Hyper-V memory access using Hyper-V memory access library
+// Please, refer to the hvmm/ folder for more information or its original repository:
+// https://github.com/gerhart01/LiveCloudKd
+//
+// (c) Ulf Frisk, 2018-2025
+// Author: Ulf Frisk, pcileech@frizk.net
+//
+// (c) Arthur Khudyaev, 2018-2025
+// Author: Arthur Khudyaev, @gerhart_x
+//
+// (c) Matt Suiche, 2018-2025
+// Author: Matt Suiche, www.msuiche.com
+//
+
 #include "leechcore_device_hvmm_misc.h"
 
 BOOL IsDigital(PLC_CONTEXT ctxLC, PCHAR str, ULONG64 len)
@@ -51,13 +65,12 @@ ULONG GetNumberFromParam(_In_ PLC_CONTEXT ctxLC, PCHAR pId, _In_ PCSTR pszSrch)
                     return -1;
 
                 szResult = atoi(szParamId);
-                ctx->VmidPreselected = TRUE;
                 bResult = TRUE;
             }
             else
             {
                 lcprintf(ctxLC,
-                    "DEVICE_HVMM: ERROR: vmid length is too big: %d\n",
+                    "DEVICE_HVMM: ERROR: param length is too big: %d\n",
                     uParamIdLength);
                 return -1;
             }
@@ -74,13 +87,12 @@ ULONG GetNumberFromParam(_In_ PLC_CONTEXT ctxLC, PCHAR pId, _In_ PCSTR pszSrch)
             if (uParamIdLength < 6)
             {
                 szResult = atoi(szParamId);
-                ctx->VmidPreselected = TRUE;
                 bResult = TRUE;
             }
             else
             {
                 lcprintf(ctxLC,
-                    "DEVICE_HVMM: ERROR: vmid length is too big: %d\n",
+                    "DEVICE_HVMM: ERROR: param length is too big: %d\n",
                     uParamIdLength);
                 return -1;
             }
@@ -127,4 +139,53 @@ BOOLEAN GetHvmmPresent(_In_ PLC_CONTEXT ctxLC)
     }
 
     return FALSE;
+}
+
+USHORT
+GetConsoleTextAttribute(
+    _In_ HANDLE hConsole
+)
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
+    return(csbi.wAttributes);
+}
+
+VOID
+Green(LPCWSTR Format, ...)
+{
+    HANDLE Handle;
+    USHORT Color;
+    va_list va;
+
+    Handle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    Color = GetConsoleTextAttribute(Handle);
+
+    SetConsoleTextAttribute(Handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+    va_start(va, Format);
+    vwprintf(Format, va);
+    va_end(va);
+
+    SetConsoleTextAttribute(Handle, Color);
+}
+
+BOOLEAN AsciiToUnicode(PCHAR Asciistring, PWCHAR Unistring, ULONG unistring_size)
+{
+    if (!Asciistring | !Unistring)
+    {
+        wprintf(L"hvlib:string param are NULL \n");
+        return FALSE;
+    }
+
+    ULONG64 len_a = strlen(Asciistring);
+
+    if (len_a > unistring_size)
+        len_a = unistring_size;
+
+    for (ULONG i = 0; i < len_a; i++)
+        Unistring[i] = Asciistring[i];
+
+    return TRUE;
 }
