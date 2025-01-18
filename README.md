@@ -27,7 +27,8 @@ Hyper-V Virtual Machine plugin for MemProcFS. [Download](https://github.com/gerh
 Hyper-V Memory Manager plugin for volatility. [Download](https://github.com/gerhart01/Hyper-V-Tools/releases/download/v1.0.20240427/Hyper-V.Memory.Manager.plugin.for.volatility.v1.0.20240427.zip)  
 HyperViews. [Download](https://github.com/gerhart01/Hyper-V-Tools/tree/main/HyperViews)  
 
-Also SDK for working with Hyper-V memory is available
+Also SDK for working with Hyper-V memory is available  
+
 Hyper-V Memory Manager module for Powershell. [Link](https://github.com/gerhart01/Hyper-V-Tools/tree/main/HvlibPowershell)  
 Hyper-V Memory Manager module for Python. [Link](https://github.com/gerhart01/LiveCloudKd/tree/master/LiveCloudKdPy)  
 Hyper-V Memory Manager module for C#. [Link](https://github.com/gerhart01/LiveCloudKd/tree/master/hvlibdotnet)  
@@ -55,7 +56,7 @@ Windows 10
 
 and some preview versions of Windows 11 and Windows Server vNext
 
-Configure symbol path:
+Configure symbol path for WinDBG:
 
 ``` 
 mkdir C:\Symbols
@@ -67,11 +68,10 @@ For launch:
 
 1. Extract LiveCloudKd.exe, hvlib.dll, hvmm.sys to WinDBG x64 folder (tested on WinDBG from WDK 1809 - 24H2) or separate folder (use /y key for specifying directory with WinDBG). 
     Also, LiveCloudKd can find a path to WinDBG, if it was installed with Windows WDK or SDK.
-2. Launch LiveCloudKd.exe with local administrator privileges (It needs Visual Studio 2022 runtime libraries - https://aka.ms/vs/17/release/vc_redist.x64.exe).
+2. Launch LiveCloudKd.exe with local administrator privileges (it needs Visual Studio 2022 runtime libraries - https://aka.ms/vs/17/release/vc_redist.x64.exe).
 3. Choose a Hyper-V virtual machine or local Windows for representation to WinDBG as dump file.  
 
 LiveCloudKd searches WinDBG in the next steps:
-
 
 1. Directory, which specifying with /y parameter.
 
