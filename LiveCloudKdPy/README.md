@@ -32,7 +32,7 @@ Current configuration options:
 **"ReadMethod"** - memory reading method for driver. Class ReadMemoryMethod  
 **"WriteMethod"** - memory writing method for driver. Class WriteMemoryMethod  
 **"PauseMethod"** - method of suspend VM. Class SuspendResumeMethod  
-**"LogLevel"** - log level. Integer [0..4]
+**"LogLevel"** - log level. Integer [0..4]  
 **"ForceFreezeCPU"** - boolean. FreezeCPU using virtual VM registers when suspend VM  
 **"PausePartition"** - boolean. VM was suspended when SdkSelectPartition will be executed  
 **"ReloadDriver"** - boolean. Reload driver when starting plugin. Need in some cases when service is not deleted correctly  

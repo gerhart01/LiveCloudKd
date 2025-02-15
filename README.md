@@ -14,7 +14,7 @@ The tool has additional options in comparison with LiveKd from Microsoft Sysinte
 3. Support Hyper-V VM with nested option enabled on Intel-based CPU
 4. Support multilingual OS
 
-LiveCloudKd. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v2.8.4.20241221/LiveCloudKd.v2.8.4.20241221-release.zip)  
+LiveCloudKd. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v2.8.5.20250209/LiveCloudKd.v2.8.5.20250209-release.zip)  
 Contains EXDI plugin for static dump view:    
 
 ![WinDBG](images/image01.png)  
@@ -42,7 +42,7 @@ Methods for accessing guest Hyper-V VM memory:
  WriteInterfaceWinHv - uses Hyper-V hypercall for writing to guest OS memory.
  WriteInterfaceHvmmDrvInternal - write data directly to kernel memory. Faster, than WriteInterfaceWinHv, but uses undocumented structures). The default writing method is WriteInterfaceHvmmDrvInternal.
 ```
-Also  ReadInterfaceLocal - read data from local operation system (not Hyper-V) is available  
+Also ReadInterfaceLocal interface for readomg data from local operation system is available  
 
 LiveCloudKd was tested on 
 ```
@@ -86,6 +86,14 @@ Performance comparison with LiveKd from Sysinternals Suite (LiveCloudKd is more 
 
 ![](images/image03.png)
 
+You can view Windows securekernel address space in static mode of Hyper-V VM with VBS enabled option in guest OS.
+
+1. Launch Hyper-V VM with guest OS VBS enable;
+2. Launch LiveCloudKd in EXDi mode;
+3. Enter ".reload /f securekernel.exe=<addr>" to get securekernel symbols information. You can see securekernel image base address in output window.
+
+![](images/image04.png)
+
 LiveCloudKd options:
 
 ``` 
@@ -98,7 +106,6 @@ LiveCloudKd options:
                   5 - Dump RAW guest OS memory (without KDBG scanning)
                   6 - Resume VM
  /b         Close LiveCloudKd automatically, after exiting from kd or WinDBG.
- /f         Force freeze CPU on every read operation. It is actually for Windows Sandbox because it constantly resumes CPU.
  /m         Memory access type.
                   0 - Winhvr.sys interface
                   1 - Raw memory interface (hvmm.sys)
@@ -107,12 +114,15 @@ LiveCloudKd options:
  /o         Destination path for the output file (Action 2 - 5).
  /p         Pause partition.
  /v         Verbose output.
+                    0 - errors
+                    1 - warnings
+                    2 - information messages
  /w         Run WinDBG instead of Kd (Kd is the default).
  /y         Set path to WinDBG or WinDBG with modern UI (for start EXDI plugin)
  /?         Print this help.
 ``` 
 
-EXDI module can get instructions for writing some bytes to Hyper-V virtual machine memory from WinDBG engine (depending on WinDBG or WinDBGX version), therefore writing memory capabilities are disabled by default.
+EXDI module can get instructions to write some bytes to Hyper-V virtual machine memory from WinDBG engine (depending from WinDBG or WinDBGX version), therefore writing memory capabilities are disabled by default.
 To enable it enter the command:
 
 ```
@@ -124,4 +134,4 @@ disable
 wrmsr 0x1112 0
 ```
 
-Project uses diStorm3 library (BSD license) by [Gil Dabah](https://twitter.com/_arkon): [Distorm project](https://github.com/gdabah/distorm)
+Project uses diStorm3 library (BSD license) by [Gil Dabah](https://x.com/_arkon): [Distorm project](https://github.com/gdabah/distorm)

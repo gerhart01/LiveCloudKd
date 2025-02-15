@@ -14,11 +14,11 @@
 
 Hvlib is plugin for working with Microsoft Hyper-V virtual machines memory. It was developed, when 
 LiveCloudKd was rewritten for supporting modern Windows versions, therefore it supports Windows 10 build 1803 and above, Windows Server 2019 and above
-It also was test on Windows 8 x64 and Windows Server 2012, but not with latest patches.
+It also was tested on Windows 8 x64 and Windows Server 2012, but not with latest patches.
 
 Part of code was taken from LiveCloudKd project https://github.com/msuiche/LiveCloudKd by Matt Suiche (www.msuiche.com).
 
-So it was developed, because Microsoft doesn't provide necessary API description and examples of vid.dll
+So it was developed, because Microsoft doesn't provide necessary API description and examples of vid.dll, vid.sys, winhv.sys, winhvr.sys, hvix64.exe, hvax64.exe, hvaa64.exe
 
 Hvlib supports two memory access methods for Hyper-V memory
 
@@ -44,9 +44,9 @@ and separate LiveCloudKdExample project
 1. Fill VmOperationsConfig structure with options. See available options in VM_OPERATIONS_CONFIG structure
 2. Get list of running Virtual Machines using SdkEnumPartitions function.
 
-```c
+```
 	SdkGetDefaultConfig(&VmOperationsConfig);
-    PULONG64 Partitions = SdkEnumPartitions(&PartitionCount, &VmOperationsConfig);
+	PULONG64 Partitions = SdkEnumPartitions(&PartitionCount, &VmOperationsConfig);
 ```
 
 3. Next use
