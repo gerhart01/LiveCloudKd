@@ -49,7 +49,7 @@ Methods for accessing local operation system memory:
  WriteInterfaceLocal - uses for writing data to local operation system memory  
 ```
 
-LiveCloudKd was tested on 
+LiveCloudKd was tested on WinDBG from WDK 1809 - 24H2 on
 ```
 Windows Server 2025
 Windows Server 2022 
@@ -58,7 +58,6 @@ Windows Server 2016
 Windows 11
 Windows 10
 ```
-
 and some preview versions of Windows 11 and Windows Server vNext
 
 Configure symbol path for WinDBG:
@@ -71,10 +70,11 @@ setx /m _NT_SYMBOL_PATH SRV*C:\Symbols*https://msdl.microsoft.com/download/symbo
 
 For launch:
 
-1. Extract LiveCloudKd.exe, hvlib.dll, hvmm.sys to WinDBG x64 folder (tested on WinDBG from WDK 1809 - 24H2) or separate folder (use /y key for specifying directory with WinDBG). 
+1. Extract distributive to folder and specify path to WinDBG in RegParam.reg, apply it or use /y command line parameter.
     Also, LiveCloudKd can find a path to WinDBG, if it was installed with Windows WDK or SDK.
-2. Launch LiveCloudKd.exe with local administrator privileges (it needs Visual Studio 2022 runtime libraries - https://aka.ms/vs/17/release/vc_redist.x64.exe).
-3. Choose a Hyper-V virtual machine or local Windows for representation to WinDBG as dump file.  
+2. Install Visual Studio 2022 runtime libraries [Link](https://aka.ms/vs/17/release/vc_redist.x64.exe), if it necessary in your environment.
+3. Start LiveCloudKd.exe with local administrator privileges.
+4. Choose a Hyper-V virtual machine or local Windows for representation as dump file.  
 
 LiveCloudKd searches WinDBG in the next steps:
 
@@ -83,18 +83,18 @@ LiveCloudKd searches WinDBG in the next steps:
 ```
 LiveCloudKd /y C:\Microsoft\WinDBG
 ```
-2. Windows Registry HKLM\Software\LiveCloudKd\Parameters\WinDbgPath key. See RegParam.key for instance. 
+2. Windows registry HKLM\Software\LiveCloudKd\Parameters\WinDbgPath key. See RegParam.key for instance. 
 3. Standard Windows SDK\WDK installation folder (used registry key for search that path).
-4. If the previous result is not successful, LiveCloudKd tries to run kd.exe from the same folder.
+4. If the previous result was not successful, LiveCloudKd tries to run kd.exe from the same folder.
 
-Performance comparison with LiveKd from Sysinternals Suite (LiveCloudKd is more performance: about 1000 times using ReadInterfaceHvmmDrvInternal interface):
+Performance comparison with LiveKd from Sysinternals Suite (LiveCloudKd is more performance about 1000 times using ReadInterfaceHvmmDrvInternal interface for reading memory):
 
 ![](images/image03.png)
 
 You can view Windows securekernel address space in static mode of Hyper-V VM with VBS enabled option in guest OS.
 
-1. Launch Hyper-V VM with guest OS VBS enable;
-2. Launch LiveCloudKd in EXDI mode;
+1. Launch Hyper-V VM with guest OS VBS enable;  
+2. Launch LiveCloudKd in EXDI mode;  
 3. Enter ".reload /f securekernel.exe=<addr>" to get securekernel symbols information. You can see securekernel image base address in output window.
 
 ![](images/image04.png)
