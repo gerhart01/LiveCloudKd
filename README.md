@@ -63,9 +63,9 @@ and some preview versions of Windows 11 and Windows Server vNext
 Configure symbol path for WinDBG:
 
 ``` 
-mkdir C:\Symbols
+New-Item -Type Directory C:\Symbols
 compact /c /i /q /s:C:\Symbols
-setx /m _NT_SYMBOL_PATH SRV*C:\Symbols*https://msdl.microsoft.com/download/symbols
+[Environment]::SetEnvironmentVariable("_NT_SYMBOL_PATH", "SRV*C:\symbols*https://msdl.microsoft.com/download/symbols;SRV*C:\symbols*https://chromium-browser-symsrv.commondatastorage.googleapis.com;SRV*C:\symbols*https://download.amd.com/dir/bin;SRV*C:\symbols*https://driver-symbols.nvidia.com/;SRV*C:\symbols*https://software.intel.com/sites/downloads/symbols/", "Machine")
 ```
 
 For launch:
