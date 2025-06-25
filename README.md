@@ -22,7 +22,7 @@ Contains EXDI plugin for static dump view:
 
 LiveCloudKd is based on the hvlib.dll library (Hyper-V Memory Manager plugin). Other tools, that were developed using this library:
 
-LiveCloudKd EXDI debugger.                    [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.0.22021109/LiveCloudKd.EXDI.debugger.v1.0.22021109.zip). [Readme](https://github.com/gerhart01/LiveCloudKd/blob/master/ExdiKdSample/LiveDebugging.md)  
+LiveCloudKd EXDI live debugger.               [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.0.22021109/LiveCloudKd.EXDI.debugger.v1.0.22021109.zip). [Readme](https://github.com/gerhart01/LiveCloudKd/blob/master/ExdiKdSample/LiveDebugging.md)  
 Hyper-V Virtual Machine plugin for MemProcFS. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.5.20250226/leechcore_hyperv_plugin_26.02.2025.zip)  
 Hyper-V Memory Manager plugin for volatility. [Download](https://github.com/gerhart01/Hyper-V-Tools/releases/download/v1.0.20240427/Hyper-V.Memory.Manager.plugin.for.volatility.v1.0.20240427.zip)  
 HyperViews.                                   [Download](https://github.com/gerhart01/Hyper-V-Tools/tree/main/HyperViews)  
@@ -63,9 +63,31 @@ and some preview versions of Windows 11 and Windows Server vNext
 Configure symbol path for WinDBG:
 
 ``` 
-New-Item -Type Directory C:\Symbols
-compact /c /i /q /s:C:\Symbols
-[Environment]::SetEnvironmentVariable("_NT_SYMBOL_PATH", "SRV*C:\symbols*https://msdl.microsoft.com/download/symbols;SRV*C:\symbols*https://chromium-browser-symsrv.commondatastorage.googleapis.com;SRV*C:\symbols*https://download.amd.com/dir/bin;SRV*C:\symbols*https://driver-symbols.nvidia.com/;SRV*C:\symbols*https://software.intel.com/sites/downloads/symbols/", "Machine")
+$folder = "C:\Symbols"
+New-Item -Type Directory $folder
+compact /c /i /q /s:$folder
+$symbol_path = "SRV*$folder*https://msdl.microsoft.com/download/symbols;"+
+"SRV*$folder*https://chromium-browser-symsrv.commondatastorage.googleapis.com;"+
+"SRV*$folder*https://download.amd.com/dir/bin;"+
+"SRV*$folder*https://driver-symbols.nvidia.com/;"+
+"SRV*$folder*https://software.intel.com/sites/downloads/symbols/;"+
+"SRV*$folder*https://ctxsym.citrix.com/symbols;"+
+"SRV*$folder*https://symbols.nuget.org/download/symbols"
+[Environment]::SetEnvironmentVariable("_NT_SYMBOL_PATH",$symbol_path,
+"Machine")
+
+```
+
+for Hyper-V VMs enough:
+
+``` 
+$folder = "C:\Symbols"
+New-Item -Type Directory $folder
+compact /c /i /q /s:$folder
+$symbol_path = "SRV*$folder*https://msdl.microsoft.com/download/symbols"
+[Environment]::SetEnvironmentVariable("_NT_SYMBOL_PATH",$symbol_path,
+"Machine")
+
 ```
 
 For launch:
@@ -74,7 +96,7 @@ For launch:
     Also, LiveCloudKd can find a path to WinDBG, if it was installed with Windows WDK or SDK.
 2. Install Visual Studio 2022 runtime libraries [Link](https://aka.ms/vs/17/release/vc_redist.x64.exe), if it necessary in your environment.
 3. Start LiveCloudKd.exe with local administrator privileges.
-4. Choose a Hyper-V virtual machine or local Windows for representation as dump file.  
+4. Choose a Hyper-V virtual machine or local Windows for representation it's RAM as dump file.  
 
 LiveCloudKd searches WinDBG in the next steps:
 
@@ -84,8 +106,8 @@ LiveCloudKd searches WinDBG in the next steps:
 LiveCloudKd /y C:\Microsoft\WinDBG
 ```
 2. Windows registry HKLM\Software\LiveCloudKd\Parameters\WinDbgPath key. See RegParam.key for instance. 
-3. Standard Windows SDK\WDK installation folder (used registry key for search that path).
-4. If the previous result was not successful, LiveCloudKd tries to run kd.exe from the same folder.
+3. Standard Windows SDK\WDK, WinDBG or WinDBG with modern UI installation folder (used registry key for search that path).
+4. If the previous result was not successful, LiveCloudKd tries to run kd.exe, windbg.exe or DbgX.Shell.exe from the same folder.
 
 Performance comparison with LiveKd from Sysinternals Suite (LiveCloudKd is more performance about 1000 times using ReadInterfaceHvmmDrvInternal interface for reading memory):
 
@@ -95,7 +117,7 @@ You can view Windows securekernel address space in static mode of Hyper-V VM wit
 
 1. Launch Hyper-V VM with guest OS VBS enable;  
 2. Launch LiveCloudKd in EXDI mode;  
-3. Enter ".reload /f securekernel.exe=<addr>" to get securekernel symbols information. You can see securekernel image base address in output window.
+3. Enter ".reload /f securekernel.exe=addr" to get securekernel symbols information. You can see securekernel image base address in output window.
 
 ![](images/image04.png)
 
@@ -137,4 +159,6 @@ disable
 wrmsr 0x1112 0
 ```
 
-Project uses diStorm3 library (BSD license) by [Gil Dabah](https://x.com/_arkon): [Distorm project](https://github.com/gdabah/distorm)
+Project uses diStorm3 library (BSD license) by [Gil Dabah](https://x.com/_arkon): [Distorm project](https://github.com/gdabah/distorm).  
+Singularity OS header files from Microsoft: [Project](https://www.microsoft.com/en-us/research/project/singularity/publications/), [Download link](https://github.com/lastweek/source-singularity).  
+and some definitions from [Hypervisor Development Kit](https://github.com/ionescu007/hdk) by [Alex Ionescu](https://x.com/aionescu).    
