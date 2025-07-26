@@ -9,7 +9,7 @@ Also, you can use the LiveCloudKd EXDI plugin for attaching to Hyper-V VM.  
 The tool uses Hyper-V Memory Manager plugin for operations with Hyper-V memory.
 The tool has additional options in comparison with LiveKd from Microsoft Sysinternals Suite:
 
-1. Write capabilities (you can write to Hyper-V VM in virtual and physical address space using native WinDBG commands or Hvlib API)
+1. Write capabilities (you can write to Hyper-V VM virtual and physical address space using native WinDBG commands or hvlib API)
 2. More performance
 3. Support Hyper-V VM with nested option enabled on Intel-based CPU
 4. Support multilingual OS
@@ -62,7 +62,7 @@ and some preview versions of Windows 11 and Windows Server vNext
 
 Configure symbol path for WinDBG:
 
-``` 
+```powershell 
 $folder = "C:\Symbols"
 New-Item -Type Directory $folder
 compact /c /i /q /s:$folder
@@ -80,7 +80,7 @@ $symbol_path = "SRV*$folder*https://msdl.microsoft.com/download/symbols;"+
 
 for Hyper-V VMs enough:
 
-``` 
+```powershell  
 $folder = "C:\Symbols"
 New-Item -Type Directory $folder
 compact /c /i /q /s:$folder
@@ -106,7 +106,7 @@ LiveCloudKd searches WinDBG in the next steps:
 LiveCloudKd /y C:\Microsoft\WinDBG
 ```
 2. Windows registry HKLM\Software\LiveCloudKd\Parameters\WinDbgPath key. See RegParam.key for instance. 
-3. Standard Windows SDK\WDK, WinDBG or WinDBG with modern UI installation folder (used registry key for search that path).
+3. Standard Windows SDK\WDK, WinDBG or WinDBG with modern UI installation folder (uses registry key for search that path and windbgx command).
 4. If the previous result was not successful, LiveCloudKd tries to run kd.exe, windbg.exe or DbgX.Shell.exe from the same folder.
 
 Performance comparison with LiveKd from Sysinternals Suite (LiveCloudKd is more performance about 1000 times using ReadInterfaceHvmmDrvInternal interface for reading memory):
@@ -159,6 +159,7 @@ disable
 wrmsr 0x1112 0
 ```
 
-Project uses diStorm3 library (BSD license) by [Gil Dabah](https://x.com/_arkon): [Distorm project](https://github.com/gdabah/distorm).  
-Singularity OS header files from Microsoft: [Project](https://www.microsoft.com/en-us/research/project/singularity/publications/), [Download link](https://github.com/lastweek/source-singularity).  
-and some definitions from [Hypervisor Development Kit](https://github.com/ionescu007/hdk) by [Alex Ionescu](https://x.com/aionescu).    
+Project uses:
+  * diStorm3 library (BSD license) by [Gil Dabah](https://x.com/_arkon): [Distorm project](https://github.com/gdabah/distorm).  
+  * Singularity OS header files from Microsoft: [Project](https://www.microsoft.com/en-us/research/project/singularity/publications/), [Download link](https://github.com/lastweek/source-singularity).  
+  * and some definitions from [Hypervisor Development Kit](https://github.com/ionescu007/hdk) by [Alex Ionescu](https://x.com/aionescu).    
