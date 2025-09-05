@@ -1,7 +1,10 @@
 Hyper-V Memory Manager library
 ©2019 by Arthur Khudyaev is licensed under CC BY - NC - ND 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-nd/4.0/
 
-Addition to that license (under conditions, that do not contradict with original license text) you can use that library in commercial purposes only with identification of the creator(s) of the Licensed  Material and any others designated to receive  attribution, in any reasonable manner requested by the Licensor (including by pseudonym if designated), in place, that can be indexed by searches engines.
+Addition to that license (under conditions, that do not contradict with original license text) you can use that library in commercial purposes only with 
+identification of the creator(s) of the Licensed  Material and any others designated to receive  attribution, in any reasonable manner requested by the Licensor 
+(including by pseudonym if designated), in place, 
+that can be indexed by searches engines.
 
 
 Original license text:
