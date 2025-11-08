@@ -6,17 +6,17 @@ Some of binaries are protected with Enigma Protector.
 If you will be used recommendation to create snapshots for VM with host OS, you won't notice it much.
 Yes, free software must be protected too, as Microsoft showed - https://x.com/gerhart_x/status/1915104209948791211.
 
-WinDBG - early WInDBG with modern UI, that can be downloaded from Windows Store
-WinDBG (Classic) - WinDBG, that included in Windows WDK or SDK
+WinDBG - early WInDBG with modern UI, that can be downloaded from Windows Store.  
+WinDBG (classic) - WinDBG, that included in Windows WDK or SDK
 
 LiveCloudKd EXDI debugger can be used for debugging Hyper-V guest OS kernel including securekernel without enabling kernel debugging in Windows bootloader with VBS and HVCI enabled.
 
 Working with guest Windows Server 2019, 2022, 2025 and Windows 11, including preview builds (on November 2025).
 
-For debugging you can use Windows Server 2022, 2025 (including Insider Preview and Evaluation Edition) or Windows 11 (including Insider Preview) as host OS. I still recommend to use Windows Server version, because it more stable for debugging.
+For debugging you can use Windows Server 2019, 2022, 2025 (including Insider Preview and Evaluation Edition) or Windows 11 (including Insider Preview) as host OS. I still recommend to use Windows Server version, because it more stable for debugging.
 
-It is good to use VMWare Workstation for it, but you can try use Hyper-V with Windows as guest OS and debugged OS as nested guest OS.
-For Windows 11 you need to change Hyper-V scheduler to Classic
+It is good to use VMWare Workstation for it, but you can try use Hyper-V with Windows Server or client as guest OS and debugged OS as nested guest OS.
+For Windows 11 you need to change Hyper-V scheduler type to "Classic"
 
 ```
   bcdedit /set hypervisorschedulertype Classic
@@ -233,7 +233,18 @@ reg ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v Enable
 ```
 I met situations, where if you start WinDBG in administrative mode (using right click of mouse and select "Run as administrator") you can get dllhost.exe process, that handles Hyper-V Memory Manager library, without full administrative access.
 
-6. If starting WinDBG is not working from command line (i got that in some builds), you can create corresponding KernelConnect<some_number>.debugTarget file (for example KernelConnect0213466621.debugTarget) in C:\Users\UserName\AppData\Local\DBG\Targets
+Also you need to rename KernelConnect0258833430 to KernelConnect<new_number>, because old files with old numeration are filtering (i hope, that WinDBG starting from command line will be working)
+
+6. Some versions of WinDBG have bug to auto starting EXDI plugin from command line, therefore it must be start manually (through EXDI connection string in WinDBG window). But latest versions (1.2510.7001.0 and later) work without that errors.
+   
+7.  If you have trouble with securekernel.exe searching, check
+```
+Get-VMSecurity -VMName <VMName>
+```
+output. VirtualizationBasedSecurityOptOut must be $false	
+Don't enable nested virtualization support for guest OS. VBS in guest Hyper-V VM works without guest hypervisor.
+
+8. If starting WinDBG is not working from command line (i got that in some builds), you can create corresponding KernelConnect<some_number>.debugTarget file (for example KernelConnect0213466621.debugTarget) in C:\Users\UserName\AppData\Local\DBG\Targets
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -280,14 +291,3 @@ In latest WinDBG version you additionally need to edit C:\Users\<username>\AppDa
     </RecentTargetsServiceV2>
   </XmlSetting>
 ```
-
-Also you need to rename KernelConnect0258833430 to KernelConnect<new_number>, because old files with old numeration are filtering (i hope, that WinDBG starting from command line will be working)
-
-7. Some versions of WinDBG have bug to auto starting EXDI plugin from command line, therefore it must be start manually (through EXDI connection string in WinDBG window). But latest versions (1.2510.7001.0 and later) work without that errors.
-   
-8.  If you have trouble with securekernel.exe searching, check
-```
-Get-VMSecurity -VMName <VMName>
-```
-output. VirtualizationBasedSecurityOptOut must be $false	
-Don't enable nested virtualization support for guest OS. VBS in guest Hyper-V VM works without guest hypervisor.
