@@ -1,21 +1,19 @@
 # Hyper-V live debugging
 
-[Actual distributive](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.0.22021109/LiveCloudKd.EXDi.debugger.v1.0.22021109.zip)
+[Actual distributive](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.0.20251103/LiveCloudKd.EXDI.debugger.v1.0.20251103.zip)
 
-Documentation for new debugger build. Actual distributive will be shared, after good protector will be found for it (yes, free software must be protected too, as Microsoft showed (https://x.com/gerhart_x/status/1915104209948791211) - it is strange. Why need to do that?).
-
-Documentation for older releases you can read at: https://github.com/gerhart01/LiveCloudKd/blob/64ba7a128e303509b4c548a5167a624ae7afbfa9/ExdiKdSample/LiveDebugging.md
+Documentation for new debugger build. (Yes, free software must be protected too, as Microsoft showed (https://x.com/gerhart_x/status/1915104209948791211)).
 
 WinDBG - early WInDBG with modern UI, that can be downloaded from Windows Store
 WinDBG (Classic) - WinDBG, that included in Windows WDK or SDK
 
 LiveCloudKd EXDI debugger can be used for debugging Hyper-V guest OS kernel including securekernel without enabling kernel debugging in Windows bootloader with VBS and HVCI enabled.
 
-Working with guest Windows Server 2022, 2025 and Windows 11, including preview builds (on September 2025)
+Working with guest Windows Server 2019, 2022, 2025 and Windows 11, including preview builds (on November 2025).
 
 For debugging you can use Windows Server 2022, 2025 (including Insider Preview and Evaluation Edition) or Windows 11 (including Insider Preview) as host OS. I still recommend to use Windows Server version, because it more stable for debugging.
 
-It is good to use VMware Workstation for it, but you can try use Hyper-V with Windows Server 2019 as guest OS and debugged OS as nested guest OS.
+It is good to use VMWare Workstation for it, but you can try use Hyper-V with Windows as guest OS and debugged OS as nested guest OS.
 For Windows 11 you need to change Hyper-V scheduler to Classic
 
 ```
@@ -29,7 +27,7 @@ Current scheduler type must be 1 or 2.
 Get-WinEvent -FilterHashTable @{ProviderName="Microsoft-Windows-Hyper-V-Hypervisor"; ID=2} -MaxEvents 1
 ```
 
-Also for guest OS disable dynamic memory
+Also disable dynamic memory for guest OS. 
 
 # VSM\VBS activating for Secure Kernel debugging
 
@@ -43,13 +41,17 @@ For guest VM don't forget enable Secure Boot and Trusted Platform Module (for Wi
 
 EXDI is used for integration custom debugging engines with WinDBG.
 
-1. Extract all debugger files to WinDBG (Classic) install directory (installer can be found in Windows SDK 11 24H2)
+1. Extract all debugger files to WinDBG (classic) install directory (installer can be found in Windows SDK 11 25H2)
 2. Install Visual Studio 2022 runtime libraries - https://aka.ms/vs/17/release/vc_redist.x64.exe 
 3. Register ExdiKdSample.dll using
    ```
    regsvr32.exe /i ExdiKdSample.dll
    ```
-   command
+  command or launch LiveCloudKd with next options subsequently
+   ```
+   LiveCloudKd /l /a 0 /n 0
+   ```
+
 4. Configure symbols path for WinDBG:
 
 ```
@@ -64,18 +66,19 @@ compact /c /i /q /s:$folder
 
 # Start
 
-1. Set "VSMScan"=dword:00000001 for securekernel.exe scanning or "VSMScan"=dword:00000000 for ntoskrnl debugging (if it is needed) using RegParam.reg file in debugger distributive.
+1. Set "VSMScan"=dword:00000001 for securekernel.exe scanning or "VSMScan"=dword:00000000 for ntoskrnl debugging (if it is needed) using RegParam.reg file in debugger distributive. Default value is "VSMScan"=dword:00000001.
 2. Start LiveCloudKd with EXDI plugin: 
 
 ```
 LiveCloudKd /l /a 0 /n 0
 ```
 a - Action ID (Live kernel debugger)
+l - using EXDI interface
 n - ID of virtual machine (standard is zero, if you run VM. Useful for restarting)
 
-It automatically launches WinDBG with EXDI plugin in live debugging mode.
+It automatically launches WinDBG (classic) with EXDI plugin in live debugging mode.
 
-3. You can use WinDBG and see events in separate logging window:
+1. You can use WinDBG and see events in separate logging window:
 
 ![](./images/EXDI6.png)
 
@@ -87,12 +90,12 @@ windbg.exe -d -v -kx exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
 
 but before you need create registry key HKEY_LOCAL_MACHINE\SOFTWARE\LiveCloudKd\Parameters\VmId, type REG_DWORD and enter VM position number in LiveCloudKd list [0, 1, 2, ...]. You can see that list, if you launch LiveCloudKd without parameters. If you launch 1 VM, that parameter will be 0.
 
-5. Now you can start WinDBG, then go to File -> Start debugging -> Attach to Kernel, open EXDI tab and paste string 
+5. Now you can start WinDBG (classic), then go to File -> Start debugging -> Attach to Kernel, open EXDI tab and paste string 
 
 ```
 CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
 ```
-or for WinDBG with modern UI:
+or for WinDBG:
 
 ```
 DbgX.Shell.exe -v -kx exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
@@ -111,11 +114,11 @@ windbgx -v -kx "exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess"
 
 # Live debugging usage
 
-1 CPU for guest OS for live debugging is preferable and Dynamic memory option must be disabled.
+1 CPU for guest OS for live debugging is preferable and "dynamic memory" option must be disabled.
 Experimented multi-CPU debugging was added. For successful debugging you need set Debug -> Event Filters -> Break instruction exception to Handle -> Not Handle, and Execution -> Output inside WinDBG. 
 
-Set breakpoint using "bp" command, press "Run", wait until breakpoint was triggered. You can set 0x1000 breakpoints now. It is software like breakpoints and they are not limited. 
-Also you can use single step command.
+Set breakpoint using "bp" command, press "Run", wait until breakpoint was triggered. You can set 0x1000 breakpoints now. It is software-like breakpoints and they are not limited. 
+Also you can use single-step command.
 
 For debugging Windows Secure Kernel:
 
@@ -147,7 +150,7 @@ Found DLL import descriptor for ext-ms-win-ntos-ksr-l1-1-0.dll, function address
 Found DLL import descriptor for ext-ms-win-ntos-vmsvc-l1-1-0.dll, function address vector at 0xfffff8068882c5d8
 ```
 
-for WinDBG (Classic):
+for WinDBG (classic):
 
 ![](./images/EXDI8.png)
 
@@ -173,9 +176,10 @@ or for WinDBG:
 
 Also you can see demo video on youtube:
 
-1. Debugging Hyper-V Windows Server 2019 guest OS using LiveCloudKd EXDI plugin - https://youtu.be/_8rQwB-ESlk
-2. Microsoft Windows Server 2019 securekernel live debugging using LiveCloudKd EXDI plugin for WinDBG - https://youtu.be/tRLQwsJQ-hU
-3. Debugging Windows 11 25140 guest OS using LiveCloudKd EXDI plugin - https://www.youtube.com/watch?v=0VIVc0IsfRk
+1. How to debug Secure Kernel in VMWare Workstation 17 and Hyper-V on Windows 11 (detailed) - https://youtu.be/Sp8wft6ryWI  
+2. Debugging Hyper-V Windows Server 2019 guest OS using LiveCloudKd EXDI plugin - https://youtu.be/_8rQwB-ESlk
+3. Microsoft Windows Server 2019 securekernel live debugging using LiveCloudKd EXDI plugin for WinDBG - https://youtu.be/tRLQwsJQ-hU
+4. Debugging Windows 11 25140 guest OS using LiveCloudKd EXDI plugin - https://www.youtube.com/watch?v=0VIVc0IsfRk
 
 # Settings
 
@@ -202,15 +206,15 @@ bp securekernel!SkCallNormalMode
 bp securekernel!IumAllocateSystemHeap
 ```
 
-then press F5 (Go command) in WinDBG or WinDBG with modern UI, if breakpoint was triggered, repeat it. If it will be successful, try make simple tracing in securekernel using:
+then press F5 (Go command) in WinDBG or WinDBG (classic), if breakpoint was triggered, repeat it. If it will be successful, try make simple tracing in securekernel using:
 
 ```
-bp securekernel!SkCallNormalMode "r rcx;g"    or 
+bp securekernel!SkCallNormalMode "r rcx;g" or 
 bp securekernel!IumAllocateSystemHeap "r rcx;g"
 ```
 command
 
-2. Sometimes (not often) WinDBG can suddenly break in random code, as a usual debugging. It can be caused by some other exceptions during debugging. When this exceptions occurs, you don't get "breakpoint # hit" message.
+1. Sometimes (not often) WinDBG can suddenly break in random code, as a usual debugging. It can be caused by some other exceptions during debugging. When this exceptions occurs, you don't get "breakpoint # hit" message.
 
 ![](./images/EXDI9.png)
 
@@ -279,7 +283,7 @@ Also you need to rename KernelConnect0258833430 to KernelConnect<new_number>, be
 
 7. Some versions of WinDBG have bug to auto starting EXDI plugin from command line, therefore it must be start manually (through EXDI connection string in WinDBG window). But latest versions (1.2510.7001.0 and later) work without that errors.
    
-8.  If you have trouble with securekernel.exe searching check
+8.  If you have trouble with securekernel.exe searching, check
 ```
 Get-VMSecurity -VMName <VMName>
 ```
