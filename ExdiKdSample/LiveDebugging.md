@@ -2,7 +2,9 @@
 
 [Actual distributive](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.0.20251103/LiveCloudKd.EXDI.debugger.v1.0.20251103.zip)
 
-Documentation for new debugger build. (Yes, free software must be protected too, as Microsoft showed (https://x.com/gerhart_x/status/1915104209948791211)).
+Some of binaries are protected with Enigma Protector.
+If you will be used recommendation to create snapshots for VM with host OS, you won't notice it much.
+Yes, free software must be protected too, as Microsoft showed - https://x.com/gerhart_x/status/1915104209948791211.
 
 WinDBG - early WInDBG with modern UI, that can be downloaded from Windows Store
 WinDBG (Classic) - WinDBG, that included in Windows WDK or SDK
@@ -31,7 +33,7 @@ Also disable dynamic memory for guest OS.
 
 # VSM\VBS activating for Secure Kernel debugging
 
-First read official Microsoft document [Enable virtualization-based protection or code integrity](https://learn.microsoft.com/en-us/windows/security/hardware-security/enable-virtualization-based-protection-of-code-integrity)
+First, read official Microsoft document [Enable virtualization-based protection or code integrity](https://learn.microsoft.com/en-us/windows/security/hardware-security/enable-virtualization-based-protection-of-code-integrity)
 
 It was enough to enable VBS in group policy editor, but you can enable additional options for explore it (for example, Kernel-mode Hardware-enforced Stack Protection)
 
@@ -72,9 +74,9 @@ compact /c /i /q /s:$folder
 ```
 LiveCloudKd /l /a 0 /n 0
 ```
-a - Action ID (Live kernel debugger)
-l - using EXDI interface
-n - ID of virtual machine (standard is zero, if you run VM. Useful for restarting)
+a - action ID (live kernel debugger)
+l - using EXDI live debugging interface
+n - ID of virtual machine (standard is zero, if you run one VM)
 
 It automatically launches WinDBG (classic) with EXDI plugin in live debugging mode.
 
