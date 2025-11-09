@@ -117,7 +117,7 @@ windbgx -v -kx "exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess"
 # Live debugging usage
 
 1 CPU for guest OS for live debugging is preferable and "dynamic memory" option must be disabled.
-Experimented multi-CPU debugging was added. For successful debugging you need set Debug -> Event Filters -> Break instruction exception to Handle -> Not Handle, and Execution -> Output inside WinDBG. 
+Experimented multi-CPU debugging was added. For successful debugging you need set Debug -> Event Filters -> Break instruction exception to Handle -> Not Handle, and Execution -> Output inside WinDBG (classic) - i didn't saw that options in WinDBG. 
 
 Set breakpoint using "bp" command, press "Run", wait until breakpoint was triggered. You can set 0x1000 breakpoints now. It is software-like breakpoints and they are not limited. 
 Also you can use single-step command.

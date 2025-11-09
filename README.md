@@ -2,17 +2,17 @@ This is a fork of LiveCloudKd, which was early developed by Matt Suiche [(www.ms
 
 ## LiveCloudKd (2025)
 
-LiveCloudKd is a tool, that allows you to connect to a Hyper-V guest VM with kd.exe (or WinDBG and WinDBG with a modern UI). 
+LiveCloudKd is a tool, that allows you to connect to a Hyper-V guest VM with kd.exe or WinDBG and WinDBG (classic). 
 
 Also, you can use the LiveCloudKd EXDI plugin for attaching to Hyper-V VM.  
 
 The tool uses Hyper-V Memory Manager plugin for operations with Hyper-V memory.
 The tool has additional options in comparison with LiveKd from Microsoft Sysinternals Suite:
 
-1. Write capabilities (you can write to Hyper-V VM virtual and physical address space using native WinDBG commands or hvlib API)
+1. Write capabilities (you can write to Hyper-V VM or local OS virtual and physical address space using native WinDBG commands or hvlib API)
 2. More performance
-3. Support Hyper-V VM with nested option enabled on Intel-based CPU
-4. Support multilingual OS
+3. Support Hyper-V VM with nested virtualization option enabled on Intel-based CPU
+4. Support multilingual Windows  
 
 LiveCloudKd. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v3.0.0.20250226/LiveCloudKd.v3.0.0.20250226-release.zip)  
 Contains EXDI plugin for static dump view:    
@@ -22,12 +22,12 @@ Contains EXDI plugin for static dump view:
 
 LiveCloudKd is based on the hvlib.dll library (Hyper-V Memory Manager plugin). Other tools, that were developed using this library:
 
-LiveCloudKd EXDI live debugger.               [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.0.22021109/LiveCloudKd.EXDI.debugger.v1.0.22021109.zip). [Readme](https://github.com/gerhart01/LiveCloudKd/blob/master/ExdiKdSample/LiveDebugging.md)  
+LiveCloudKd EXDI live debugger.               [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.0.20251103/LiveCloudKd.EXDI.debugger.v1.0.20251103.zip). [Readme](https://github.com/gerhart01/LiveCloudKd/blob/master/ExdiKdSample/LiveDebugging.md)  
 Hyper-V Virtual Machine plugin for MemProcFS. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.5.20250226/leechcore_hyperv_plugin_26.02.2025.zip)  
 Hyper-V Memory Manager plugin for volatility. [Download](https://github.com/gerhart01/Hyper-V-Tools/releases/download/v1.0.20240427/Hyper-V.Memory.Manager.plugin.for.volatility.v1.0.20240427.zip)  
 HyperViews.                                   [Download](https://github.com/gerhart01/Hyper-V-Tools/tree/main/HyperViews)  
 
-Also SDK for working with Hyper-V memory is available  
+Also SDK for working with Hyper-V VM memory is available  
 
 Hyper-V Memory Manager module for Powershell. [Link](https://github.com/gerhart01/Hyper-V-Tools/tree/main/HvlibPowershell)  
 Hyper-V Memory Manager module for Python.     [Link](https://github.com/gerhart01/LiveCloudKd/tree/master/LiveCloudKdPy)  
@@ -49,7 +49,7 @@ Methods for accessing local operation system memory:
  WriteInterfaceLocal - uses for writing data to local operation system memory  
 ```
 
-LiveCloudKd was tested on WinDBG from WDK 1809 - 24H2 on
+LiveCloudKd was tested on WinDBG from WDK 1809 - 25H2 on
 ```
 Windows Server 2025
 Windows Server 2022 
@@ -106,18 +106,18 @@ LiveCloudKd searches WinDBG in the next steps:
 LiveCloudKd /y C:\Microsoft\WinDBG
 ```
 2. Windows registry HKLM\Software\LiveCloudKd\Parameters\WinDbgPath key. See RegParam.key for instance. 
-3. Standard Windows SDK\WDK, WinDBG or WinDBG with modern UI installation folder (uses registry key for search that path and windbgx command).
-4. If the previous result was not successful, LiveCloudKd tries to run kd.exe, windbg.exe or DbgX.Shell.exe from the same folder.
+3. Standard Windows SDK\WDK or WinDBG (classic) installation folder (uses registry key for search that path or "windbgx" command).
+4. If the previous result was not successful, LiveCloudKd tries to run kd.exe, windbg.exe or windbgx from the same folder.
 
 Performance comparison with LiveKd from Sysinternals Suite (LiveCloudKd is more performance about 1000 times using ReadInterfaceHvmmDrvInternal interface for reading memory):
 
 ![](images/image03.png)
 
-You can view Windows securekernel address space in static mode of Hyper-V VM with VBS enabled option in guest OS.
+You can view Windows Secure Kernel address space in static mode of Hyper-V VM with VBS enabled option in guest OS.
 
 1. Launch Hyper-V VM with guest OS VBS enable;  
 2. Launch LiveCloudKd in EXDI mode;  
-3. Enter ".reload /f securekernel.exe=addr" to get securekernel symbols information. You can see securekernel image base address in output window.
+3. Enter ".reload /f securekernel.exe=addr" or ".reload /f securekernella57.exe=addr" to get securekernel symbols information. You can see securekernel image base address in output window.
 
 ![](images/image04.png)
 
@@ -147,7 +147,7 @@ Usage: LiveCloudKd.exe [/a {0-6}][/b][/m {0-2}][/n {0-9}][/o path][/p][/v {0-2}]
       /?        Print this help
 ``` 
 
-EXDI module can get instructions to write some bytes to Hyper-V virtual machine memory from WinDBG engine (depending on the WinDBG or WinDBGX version), therefore writing memory capabilities are disabled by default.
+EXDI module can get instructions to write some bytes to Hyper-V virtual machine memory from WinDBG engine (depending on the WinDBG or WinDBG (classic) version), therefore writing memory capabilities are disabled by default.
 To enable it enter the command:
 
 ```
