@@ -17,8 +17,8 @@ The tool has additional options in comparison with LiveKd from Microsoft Sysinte
 LiveCloudKd. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v3.0.0.20250226/LiveCloudKd.v3.0.0.20250226-release.zip)  
 Contains EXDI plugin for static dump view:    
 
-![WinDBG](images/image01.png)  
-![WinDBG with modern UI](images/image02.png)  
+![WinDBG (classic)](images/image01.png)  
+![WinDBG](images/image02.png)  
 
 LiveCloudKd is based on the hvlib.dll library (Hyper-V Memory Manager plugin). Other tools, that were developed using this library:
 
@@ -142,8 +142,8 @@ Usage: LiveCloudKd.exe [/a {0-6}][/b][/m {0-2}][/n {0-9}][/o path][/p][/v {0-2}]
       /o        Destination path for the output file (Action 2 - 5).
       /p        Pause partition.
       /v        Verbose output.
-      /w        Run WinDBG instead of kd (kd is the default).
-      /y        Set path to WinDBG or WinDBG with modern UI (for start EXDI plugin).
+      /w        Run WinDBG (classic) instead of kd (kd is the default).
+      /y        Set path to WinDBG (classic) or WinDBG (for start EXDI plugin).
       /?        Print this help
 ``` 
 

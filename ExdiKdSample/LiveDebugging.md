@@ -74,9 +74,9 @@ compact /c /i /q /s:$folder
 ```
 LiveCloudKd /l /a 0 /n 0
 ```
-a - action ID (live kernel debugger)
-l - using EXDI live debugging interface
-n - ID of virtual machine (standard is zero, if you run one VM)
+a - action ID (live kernel debugger)  
+l - using EXDI live debugging interface  
+n - ID of virtual machine (standard is zero, if you run one VM)  
 
 It automatically launches WinDBG (classic) with EXDI plugin in live debugging mode.
 
@@ -201,22 +201,24 @@ There are some settings can be configured through Windows registry (see file Reg
 	
 NtSuspendProcess and NtResumeProcess are used for managing state of vmwp.exe process. It is not need for Windows Server 2019 (stopping of virtual CPUs is enough), but need for Windows 10 host OS (because of difference in CPU scheduler). If something wrong, process can be resuming using Process Explorer from Sysinternals Suite. I recommend to use Windows Server 2019
 	
-1. There are many problems can be triggered in debugging process, so at first make test (you can see example on early mentioned video):
+1. There are many problems can be triggered in debugging process, so at first make test (you can see example on early mentioned videos. Some of securekernel functions can be absent depending on securekernel image version):
 
 ```
 bp securekernel!SkCallNormalMode
 bp securekernel!IumAllocateSystemHeap
+bp securekernel!IumInvokeSecureService
 ```
 
-then press F5 (Go command) in WinDBG or WinDBG (classic), if breakpoint was triggered, repeat it. If it will be successful, try make simple tracing in securekernel using:
+then press F5 (Go command) in WinDBG or WinDBG (classic), if breakpoint was triggered, repeat it. If it will be successful, try make simple tracing in Secure Kernel using:
 
 ```
 bp securekernel!SkCallNormalMode "r rcx;g" or 
-bp securekernel!IumAllocateSystemHeap "r rcx;g"
+bp securekernel!IumAllocateSystemHeap "r rcx;g" or 
+bp securekernel!IumInvokeSecureService "r rcx;g"
 ```
-command
+command. It shows you debugger stability on current installed operating system.
 
-1. Sometimes (not often) WinDBG can suddenly break in random code, as a usual debugging. It can be caused by some other exceptions during debugging. When this exceptions occurs, you don't get "breakpoint # hit" message.
+2. Sometimes (not often) WinDBG can suddenly break in random code, as a usual debugging. It can be caused by some other exceptions during debugging. When this exceptions occurs, you don't get "breakpoint # hit" message.
 
 ![](./images/EXDI9.png)
 
