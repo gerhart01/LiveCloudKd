@@ -165,3 +165,16 @@ Project uses:
   * and some definitions from [Hypervisor Development Kit](https://github.com/ionescu007/hdk) by [Alex Ionescu](https://x.com/aionescu).    
 
 [License to Hyper-V Memory Manager library](https://github.com/gerhart01/LiveCloudKd/blob/master/LiveCloudKdSdk/LICENSE.txt)
+
+**Donation:**
+
+**Crypto:** 
+USDT 
+
+**Network:**
+Tron(TRC20) 
+
+**Address:**
+TAtXfWkNCpbjhguE3supZnT6kRE37owQgo 
+ 
+![](images/image05.png)
