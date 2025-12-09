@@ -34,6 +34,8 @@ Hyper-V Memory Manager module for Python.     [Link](https://github.com/gerhart0
 Hyper-V Memory Manager module for C#.         [Link](https://github.com/gerhart01/LiveCloudKd/tree/master/hvlibdotnet)  
 Hyper-V Memory Manager library API for C.     [Link](https://github.com/gerhart01/LiveCloudKd/tree/master/LiveCloudKdSdk)  
 
+Projects for building in one solution         [Link](https://gitlab.com/hvlib/sdk)  
+
 Methods for accessing guest Hyper-V VM memory: 
 ```
  ReadInterfaceWinHv - uses Hyper-V hypercall HvReadGPA for reading guest OS memory. Slow, but robust method; 
