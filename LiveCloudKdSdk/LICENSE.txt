@@ -6,6 +6,8 @@ identification of the creator(s) of the Licensed  Material and any others design
 (including by pseudonym if designated), in place, 
 that can be indexed by searches engines.
 
+23.01.2026 - License update:
+THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND
 
 Original license text:
 Attribution-NonCommercial-NoDerivatives 4.0 International

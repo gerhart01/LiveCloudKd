@@ -4,7 +4,9 @@
 
 Some of binaries are protected with Enigma Protector.
 If you will be used recommendation to create snapshots for VM with host OS, you won't notice it much.
-Yes, free software must be protected too, as Microsoft showed - https://x.com/gerhart_x/status/1915104209948791211.
+Yes, free software must be protected too, as Microsoft showed:  
+   https://x.com/gerhart_x/status/1915104209948791211  
+   https://x.com/gerhart_x/status/1999788848512176470  
 
 WinDBG - early WInDBG with modern UI, that can be downloaded from Windows Store.  
 WinDBG (classic) - WinDBG, that included in Windows WDK or SDK
@@ -46,34 +48,34 @@ EXDI is used for integration custom debugging engines with WinDBG.
 1. Extract all debugger files to WinDBG (classic) install directory (installer can be found in Windows SDK 11 25H2)
 2. Install Visual Studio 2022 runtime libraries - https://aka.ms/vs/17/release/vc_redist.x64.exe 
 3. Register ExdiKdSample.dll using
-   ```
-   regsvr32.exe /i ExdiKdSample.dll
-   ```
+```
+regsvr32.exe /i ExdiKdSample.dll
+```
   command or launch LiveCloudKd with next options subsequently
    ```
-   LiveCloudKd /l /a 0 /n 0
+LiveCloudKd /l /a 0 /n 0
    ```
 
 4. Configure symbols path for WinDBG:
 
-```
-$folder = "C:\Symbols"
-$symbol_path = "SRV*$folder*https://msdl.microsoft.com/download/symbols"
+  ```
+  $folder = "C:\Symbols"
+  $symbol_path = "SRV*$folder*https://msdl.microsoft.com/download/symbols"
 
-New-Item -Type Directory $folder
-compact /c /i /q /s:$folder
+  New-Item -Type Directory $folder
+  compact /c /i /q /s:$folder
 
-[Environment]::SetEnvironmentVariable("_NT_SYMBOL_PATH",$symbol_path,"Machine")
-```
+  [Environment]::SetEnvironmentVariable("_NT_SYMBOL_PATH",$symbol_path,"Machine")
+  ```
 
 # Start
 
 1. Set "VSMScan"=dword:00000001 for securekernel.exe scanning or "VSMScan"=dword:00000000 for ntoskrnl debugging (if it is needed) using RegParam.reg file in debugger distributive. Default value is "VSMScan"=dword:00000001.
 2. Start LiveCloudKd with EXDI plugin: 
 
-```
-LiveCloudKd /l /a 0 /n 0
-```
+  ```
+  LiveCloudKd /l /a 0 /n 0
+  ```
 a - action ID (live kernel debugger)  
 l - using EXDI live debugging interface  
 n - ID of virtual machine (standard is zero, if you run one VM)  
@@ -86,30 +88,30 @@ It automatically launches WinDBG (classic) with EXDI plugin in live debugging mo
 
 4. Also you can directly start WinDBG (classic) using command
 
-```
-windbg.exe -d -v -kx exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
-```
+  ```
+  windbg.exe -d -v -kx exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
+  ```
 
 but before you need create registry key HKEY_LOCAL_MACHINE\SOFTWARE\LiveCloudKd\Parameters\VmId, type REG_DWORD and enter VM position number in LiveCloudKd list [0, 1, 2, ...]. You can see that list, if you launch LiveCloudKd without parameters. If you launch 1 VM, that parameter will be 0.
 
 5. Now you can start WinDBG (classic), then go to File -> Start debugging -> Attach to Kernel, open EXDI tab and paste string 
 
-```
-CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
-```
+  ```
+  CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
+  ```
 or for WinDBG:
 
-```
-DbgX.Shell.exe -v -kx exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
-```
+  ```
+  DbgX.Shell.exe -v -kx exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess
+  ```
 or
-```
-.\DbgX.Shell.exe -v -kx "exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess"
-```
+  ```
+  .\DbgX.Shell.exe -v -kx "exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess"
+  ```
 or for OS with installed version of WinDBG
-```
-windbgx -v -kx "exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess"
-```
+  ```
+  windbgx -v -kx "exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess"
+  ```
 
 ![](./images/EXDI10.png)
 ![](./images/EXDI7.png)
@@ -127,30 +129,30 @@ For debugging Windows Secure Kernel:
 1. See securekernel.exe base address in logging output window
 2. Execute command in WinDBG:
 
-```
-.reload /f securekernel.exe=<securekernel_base_address>
-```
+  ```
+  .reload /f securekernel.exe=<securekernel_base_address>
+  ```
 
 3. Make breakpoint (you need enter Windows Secure Kernel context)
 
-```
-bp securekernel!SkCallNormalMode or 
-bp securekernel!IumInvokeSecureService
-```
+  ```
+  bp securekernel!SkCallNormalMode or 
+  bp securekernel!IumInvokeSecureService
+  ```
 
 1. After bp was triggered, execute .reload command. In WinDBG you need press Ctrl+Alt+V for enabling verbose mode (you can't to enable it from cmd line - Dbg.Shell.X doesn't get additional parameters, when it launching in EXDI mode).
 Search images load addresses in pattern:
 
-```
-The image at <module_base_address> is securekernel.exe
-The image at <module_base_address> is SKCI.dll
-The image at <module_base_address> is cng.sys 
+  ```
+  The image at <module_base_address> is securekernel.exe
+  The image at <module_base_address> is SKCI.dll
+  The image at <module_base_address> is cng.sys 
 
-Also
+  Also
 
-Found DLL import descriptor for ext-ms-win-ntos-ksr-l1-1-0.dll, function address vector at 0xfffff8068882c5c8
-Found DLL import descriptor for ext-ms-win-ntos-vmsvc-l1-1-0.dll, function address vector at 0xfffff8068882c5d8
-```
+  Found DLL import descriptor for ext-ms-win-ntos-ksr-l1-1-0.dll, function address vector at 0xfffff8068882c5c8
+  Found DLL import descriptor for ext-ms-win-ntos-vmsvc-l1-1-0.dll, function address vector at 0xfffff8068882c5d8
+  ```
 
 for WinDBG (classic):
 
@@ -162,17 +164,17 @@ or for WinDBG:
 
 1. Reload symbols for all modules, that will be found by WinDBG:
 
-```
-.reload /f securekernel.exe=<module_base_address>
-.reload /f SKCI.dll=<module_base_address>
-.reload /f cng.sys=<module_base_address>
-```
+  ```
+  .reload /f securekernel.exe=<module_base_address>
+  .reload /f SKCI.dll=<module_base_address>
+  .reload /f cng.sys=<module_base_address>
+  ```
 
 6. You can load standard address space modules using same commands even you inside Windows Secure Kernel context
 
-```
-.reload /f ntkrnlmp.exe=<module_base_address>
-```
+  ```
+  .reload /f ntkrnlmp.exe=<module_base_address>
+  ```
 
 7. Use script [securekernel_info_pykd.py](https://github.com/gerhart01/Hyper-V-scripts/blob/master/securekernel_info_pykd.py) for demo.
 
@@ -195,27 +197,27 @@ There are some settings can be configured through Windows registry (see file Reg
 1. If you close debugger or its part (output window or corresponding dllhost.exe process), virtual machine can stay in the suspended state. 
 	For resuming it without reset, start LiveCloudKd with /p option, select VM from list and then select 
 	
-```
-	4 - Resume partition.
-```
+  ```
+    4 - Resume partition.
+  ```
 	
 NtSuspendProcess and NtResumeProcess are used for managing state of vmwp.exe process. It is not need for Windows Server 2019 (stopping of virtual CPUs is enough), but need for Windows 10 host OS (because of difference in CPU scheduler). If something wrong, process can be resuming using Process Explorer from Sysinternals Suite. I recommend to use Windows Server 2019
 	
 1. There are many problems can be triggered in debugging process, so at first make test (you can see example on early mentioned videos. Some of securekernel functions can be absent depending on securekernel image version):
 
-```
-bp securekernel!SkCallNormalMode
-bp securekernel!IumAllocateSystemHeap
-bp securekernel!IumInvokeSecureService
-```
+  ```
+  bp securekernel!SkCallNormalMode
+  bp securekernel!IumAllocateSystemHeap
+  bp securekernel!IumInvokeSecureService
+  ```
 
 then press F5 (Go command) in WinDBG or WinDBG (classic), if breakpoint was triggered, repeat it. If it will be successful, try make simple tracing in Secure Kernel using:
 
-```
-bp securekernel!SkCallNormalMode "r rcx;g" or 
-bp securekernel!IumAllocateSystemHeap "r rcx;g" or 
-bp securekernel!IumInvokeSecureService "r rcx;g"
-```
+  ```
+  bp securekernel!SkCallNormalMode "r rcx;g" or 
+  bp securekernel!IumAllocateSystemHeap "r rcx;g" or 
+  bp securekernel!IumInvokeSecureService "r rcx;g"
+  ```
 command. It shows you debugger stability on current installed operating system.
 
 2. Sometimes (not often) WinDBG can suddenly break in random code, as a usual debugging. It can be caused by some other exceptions during debugging. When this exceptions occurs, you don't get "breakpoint # hit" message.
@@ -225,71 +227,71 @@ command. It shows you debugger stability on current installed operating system.
 3. You can switch register's context to VTL1, using "wrmsr 0x1111 1" command. "wrmsr 0x1111 0" switch back to VTL0. VTL0 and VTL1 memory is accessible all time.
 4. If you want restart VM, but Hyper-V Manager or powershell cmdlets shows error about existing partition, see, that LiveCloudKd and WinDBG console message windows are closed. LiveCloudKd duplicates some handles from vmwp.exe. Also you can manually unload debugger driver, if you kill WinDBG process, because some interception messages will be handled by that driver.
 
-```
-net stop hvmm
-```
+  ```
+  net stop hvmm
+  ```
 5. If you see message "No active partitions on that host", but VM is running, it means, that driver is not loaded. You need disable UAC on host OS first:
 
-```
-reg ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f
-```
-I met situations, where if you start WinDBG in administrative mode (using right click of mouse and select "Run as administrator") you can get dllhost.exe process, that handles Hyper-V Memory Manager library, without full administrative access.
+  ```
+  reg ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f
+  ```
+I met situations, where if you start WinDBG in administrative mode (using right click of mouse and select "Run as administrator") you can get dllhost.exe process, which handles Hyper-V Memory Manager library without full administrative access.
 
 Also you need to rename KernelConnect0258833430 to KernelConnect<new_number>, because old files with old numeration are filtering (i hope, that WinDBG starting from command line will be working)
 
 6. Some versions of WinDBG have bug to auto starting EXDI plugin from command line, therefore it must be start manually (through EXDI connection string in WinDBG window). But latest versions (1.2510.7001.0 and later) work without that errors.
    
-7.  If you have trouble with securekernel.exe searching, check
-```
-Get-VMSecurity -VMName <VMName>
-```
+7. If you have trouble with securekernel.exe searching, check
+  ```
+  Get-VMSecurity -VMName <VMName>
+  ```
 output. VirtualizationBasedSecurityOptOut must be $false	
 Don't enable nested virtualization support for guest OS. VBS in guest Hyper-V VM works without guest hypervisor.
 
 8. If starting WinDBG is not working from command line (i got that in some builds), you can create corresponding KernelConnect<some_number>.debugTarget file (for example KernelConnect0213466621.debugTarget) in C:\Users\UserName\AppData\Local\DBG\Targets
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<TargetConfig Name="exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess" LastUsed="2024-05-05T19:27:57.9745641Z">
-  <EngineConfig />
-  <EngineOptions>
-    <Property name="InitialBreak" value="true" />
-    <Property name="Elevate" value="false" />
-  </EngineOptions>
-  <TargetOptions>
-    <Option name="KernelConnect">
-      <Property name="ConnectionString" value="exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess" />
-      <Property name="ConnectionType" value="EXDI" />
-      <Property name="QuietMode" value="false" />
+  ```xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <TargetConfig Name="exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess" LastUsed="2024-05-05T19:27:57.9745641Z">
+    <EngineConfig />
+    <EngineOptions>
       <Property name="InitialBreak" value="true" />
-    </Option>
-    <Option name="RestoreBreakpoints">
-      <Property name="Breakpoints" />
-    </Option>
-    <Option name="RestoreCommandHistory">
-      <Property name="History" />
-    </Option>
-  </TargetOptions>
-</TargetConfig>
-```
+      <Property name="Elevate" value="false" />
+    </EngineOptions>
+    <TargetOptions>
+      <Option name="KernelConnect">
+        <Property name="ConnectionString" value="exdi:CLSID={67030926-1754-4FDA-9788-7F731CBDAE42},Kd=Guess" />
+        <Property name="ConnectionType" value="EXDI" />
+        <Property name="QuietMode" value="false" />
+        <Property name="InitialBreak" value="true" />
+      </Option>
+      <Option name="RestoreBreakpoints">
+        <Property name="Breakpoints" />
+      </Option>
+      <Option name="RestoreCommandHistory">
+        <Property name="History" />
+      </Option>
+    </TargetOptions>
+  </TargetConfig>
+  ```
 and start EXDI plugin from "Recent" option of debugger or launch it from command line (on latest versions).
 In latest WinDBG version you additionally need to edit C:\Users\<username>\AppData\Local\dbg\DbgX.xml and to add next strings:
 
-```xml
- <XmlSetting Name="RecentTargetsServiceV2">
-    <RecentTargetsServiceV2>
-      <Property name="RecentTargets">
-        <Property>
-          <Property name="FileName" value="C:\Users\user\AppData\Local\dbg\Targets\KernelConnect0258832885.debugTarget" />
-          <Property name="IsPinned" value="false" />
-          <Property name="LastUsed" value="5250462603280372936" />
+  ```xml
+  <XmlSetting Name="RecentTargetsServiceV2">
+      <RecentTargetsServiceV2>
+        <Property name="RecentTargets">
+          <Property>
+            <Property name="FileName" value="C:\Users\user\AppData\Local\dbg\Targets\KernelConnect0258832885.debugTarget" />
+            <Property name="IsPinned" value="false" />
+            <Property name="LastUsed" value="5250462603280372936" />
+          </Property>
+          <Property>
+            <Property name="FileName" value="C:\Users\user\AppData\Local\dbg\Targets\KernelConnect0258833430.debugTarget" />
+            <Property name="IsPinned" value="false" />
+            <Property name="LastUsed" value="5250462608728260569" />
+          </Property>
         </Property>
-        <Property>
-          <Property name="FileName" value="C:\Users\user\AppData\Local\dbg\Targets\KernelConnect0258833430.debugTarget" />
-          <Property name="IsPinned" value="false" />
-          <Property name="LastUsed" value="5250462608728260569" />
-        </Property>
-      </Property>
-    </RecentTargetsServiceV2>
-  </XmlSetting>
-```
+      </RecentTargetsServiceV2>
+    </XmlSetting>
+  ```
