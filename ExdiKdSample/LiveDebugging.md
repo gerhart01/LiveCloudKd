@@ -21,7 +21,7 @@ It is good to use VMWare Workstation for it, but you can try use Hyper-V with Wi
 For Windows 11 you need to change Hyper-V scheduler type to "Classic"
 
 ```
-  bcdedit /set hypervisorschedulertype Classic
+bcdedit /set hypervisorschedulertype Classic
 ```
 
 You can see current type of scheduler using command (https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/manage/manage-hyper-v-scheduler-types).
