@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="echo &quot;$(ProjectDir)$(OutDir)hvlibdotnet.dll&quot;&#xD;&#xA;echo &quot;$(SolutionDir)files\&quot;&#xD;&#xA;echo &quot;$(SolutionDir)files\$(Configuration)\sdk\&quot;&#xD;&#xA;copy &quot;$(ProjectDir)$(OutDir)hvlibdotnet.dll&quot; $(SolutionDir)files\ /y&#xD;&#xA;copy &quot;$(ProjectDir)$(OutDir)hvlibdotnet.dll&quot; $(SolutionDir)files\$(Configuration)\sdk\ /y" />
+    <Exec Command="echo &quot;$(ProjectDir)$(OutDir)hvlibdotnet.dll&quot;&#xD;&#xA;echo &quot;$(SolutionDir)files\&quot;&#xD;&#xA;echo &quot;$(SolutionDir)files\$(Configuration)\&quot;&#xD;&#xA;copy &quot;$(ProjectDir)$(OutDir)hvlibdotnet.dll&quot; $(SolutionDir)files\ /y&#xD;&#xA;copy &quot;$(ProjectDir)$(OutDir)hvlibdotnet.dll&quot; $(SolutionDir)files\$(Configuration)\ /y" />
   </Target>
 
 </Project>

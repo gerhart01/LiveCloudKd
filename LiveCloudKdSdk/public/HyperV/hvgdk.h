@@ -2239,7 +2239,197 @@ typedef struct
     };
 } HV_VP_VTL_CONTROL;
 
-typedef struct
+//typedef struct
+//{
+//    UINT32 VersionNumber;
+//    UINT32 AbortIndicator;
+//    UINT16 HostEsSelector;
+//    UINT16 HostCsSelector;
+//    UINT16 HostSsSelector;
+//    UINT16 HostDsSelector;
+//    UINT16 HostFsSelector;
+//    UINT16 HostGsSelector;
+//    UINT16 HostTrSelector;
+//    UINT64 HostPat;
+//    UINT64 HostEfer;
+//    UINT64 HostCr0;
+//    UINT64 HostCr3;
+//    UINT64 HostCr4;
+//    UINT64 HostSysenterEspMsr;
+//    UINT64 HostSysenterEipMsr;
+//    UINT64 HostRip;
+//    UINT32 HostSysenterCsMsr;
+//    UINT32 PinControls;
+//    UINT32 ExitControls;
+//    UINT32 SecondaryProcessorControls;
+//    HV_GPA IoBitmapA;
+//    HV_GPA IoBitmapB;
+//    HV_GPA MsrBitmap;
+//    UINT16 GuestEsSelector;
+//    UINT16 GuestCsSelector;
+//    UINT16 GuestSsSelector;
+//    UINT16 GuestDsSelector;
+//    UINT16 GuestFsSelector;
+//    UINT16 GuestGsSelector;
+//    UINT16 GuestLdtrSelector;
+//    UINT16 GuestTrSelector;
+//    UINT32 GuestEsLimit;
+//    UINT32 GuestCsLimit;
+//    UINT32 GuestSsLimit;
+//    UINT32 GuestDsLimit;
+//    UINT32 GuestFsLimit;
+//    UINT32 GuestGsLimit;
+//    UINT32 GuestLdtrLimit;
+//    UINT32 GuestTrLimit;
+//    UINT32 GuestGdtrLimit;
+//    UINT32 GuestIdtrLimit;
+//    UINT32 GuestEsAttributes;
+//    UINT32 GuestCsAttributes;
+//    UINT32 GuestSsAttributes;
+//    UINT32 GuestDsAttributes;
+//    UINT32 GuestFsAttributes;
+//    UINT32 GuestGsAttributes;
+//    UINT32 GuestLdtrAttributes;
+//    UINT32 GuestTrAttributes;
+//    UINT64 GuestEsBase;
+//    UINT64 GuestCsBase;
+//    UINT64 GuestSsBase;
+//    UINT64 GuestDsBase;
+//    UINT64 GuestFsBase;
+//    UINT64 GuestGsBase;
+//    UINT64 GuestLdtrBase;
+//    UINT64 GuestTrBase;
+//    UINT64 GuestGdtrBase;
+//    UINT64 GuestIdtrBase;
+//    UINT64 Rsvd1[3];
+//    HV_GPA ExitMsrStoreAddress;
+//    HV_GPA ExitMsrLoadAddress;
+//    HV_GPA EntryMsrLoadAddress;
+//    UINT64 Cr3Target0;
+//    UINT64 Cr3Target1;
+//    UINT64 Cr3Target2;
+//    UINT64 Cr3Target3;
+//    UINT32 PfecMask;
+//    UINT32 PfecMatch;
+//    UINT32 Cr3TargetCount;
+//    UINT32 ExitMsrStoreCount;
+//    UINT32 ExitMsrLoadCount;
+//    UINT32 EntryMsrLoadCount;
+//    UINT64 TscOffset;
+//    HV_GPA VirtualApicPage;
+//    HV_GPA GuestWorkingVmcsPtr;
+//    UINT64 GuestIa32DebugCtl;
+//    UINT64 GuestPat;
+//    UINT64 GuestEfer;
+//    UINT64 GuestPdpte0;
+//    UINT64 GuestPdpte1;
+//    UINT64 GuestPdpte2;
+//    UINT64 GuestPdpte3;
+//    UINT64 GuestPendingDebugExceptions;
+//    UINT64 GuestSysenterEspMsr;
+//    UINT64 GuestSysenterEipMsr;
+//    UINT32 GuestSleepState;
+//    UINT32 GuestSysenterCsMsr;
+//    UINT64 Cr0GuestHostMask;
+//    UINT64 Cr4GuestHostMask;
+//    UINT64 Cr0ReadShadow;
+//    UINT64 Cr4ReadShadow;
+//    UINT64 GuestCr0;
+//    UINT64 GuestCr3;
+//    UINT64 GuestCr4;
+//    UINT64 GuestDr7;
+//    UINT64 HostFsBase;
+//    UINT64 HostGsBase;
+//    UINT64 HostTrBase;
+//    UINT64 HostGdtrBase;
+//    UINT64 HostIdtrBase;
+//    UINT64 HostRsp;
+//    UINT64 EptRoot;
+//    UINT16 Vpid;
+//    UINT16 Rsvd2[3];
+//    UINT64 Rsvd3[5];
+//    UINT64 ExitEptFaultGpa;
+//    UINT32 ExitInstructionError;
+//    UINT32 ExitReason;
+//    UINT32 ExitInterruptionInfo;
+//    UINT32 ExitExceptionErrorCode;
+//    UINT32 ExitIdtVectoringInfo;
+//    UINT32 ExitIdtVectoringErrorCode;
+//    UINT32 ExitInstructionLength;
+//    UINT32 ExitInstructionInfo;
+//    UINT64 ExitQualification;
+//    UINT64 ExitIoInstructionEcx;
+//    UINT64 ExitIoInstructionEsi;
+//    UINT64 ExitIoInstructionEdi;
+//    UINT64 ExitIoInstructionEip;
+//    UINT64 GuestLinearAddress;
+//    UINT64 GuestRsp;
+//    UINT64 GuestRflags;
+//    UINT32 GuestInterruptibility;
+//    UINT32 ProcessorControls;
+//    UINT32 ExceptionBitmap;
+//    UINT32 EntryControls;
+//    UINT32 EntryInterruptInfo;
+//    UINT32 EntryExceptionErrorCode;
+//    UINT32 EntryInstructionLength;
+//    UINT32 TprThreshold;
+//    UINT64 GuestRip;
+//    UINT32 CleanFields;
+//    UINT32 Rsvd4;
+//    UINT32 SyntheticControls;
+//    union
+//    {
+//        UINT32 AsUINT32;
+//        struct
+//        {
+//            UINT32 NestedFlushVirtualHypercall : 1;
+//            UINT32 MsrBitmap : 1;
+//            UINT32 Reserved : 30;
+//        };
+//    } EnlightenmentsControl;
+//    UINT32 VpId;
+//    UINT32 Rsvd5;
+//    UINT64 VmId;
+//    UINT64 PartitionAssistPage;
+//    UINT64 Rsvd5[4];
+//
+//    UINT64 GuestBndcfgs;
+//    UINT64 GuestPerfGlobalCtrl;
+//    UINT64 GuestSCet;
+//    UINT64 GuestSsp;
+//    UINT64 GuestInterruptSspTableAddr;
+//    UINT64 GuestLbrCtl;
+//    UINT64 Rsvd6[2];
+//
+//    UINT64 XssExitingBitmap;
+//    UINT64 EnclsExitingBitmap;
+//    UINT64 HostPerfGlobalCtrl;
+//    UINT64 TscMultiplier;
+//    UINT64 HostSCet;
+//    UINT64 HostSsp;
+//    UINT64 HostInterruptSspTableAddr;
+//    UINT64 TertiaryProcessorControls;
+//} HV_VMX_ENLIGHTENED_VMCS, *PHV_VMX_ENLIGHTENED_VMCS;
+
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_NONE (0)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_IO_BITMAP (1 << 0)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_MSR_BITMAP (1 << 1)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_CONTROL_GRP2 (1 << 2)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_CONTROL_GRP1 (1 << 3)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_CONTROL_PROC (1 << 4)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_CONTROL_EVENT (1 << 5)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_CONTROL_ENTRY (1 << 6)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_CONTROL_EXCPN (1 << 7)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_CRDR (1 << 8)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_CONTROL_XLAT (1 << 9)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_GUEST_BASIC (1 << 10)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_GUEST_GRP1 (1 << 11)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_GUEST_GRP2 (1 << 12)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_HOST_POINTER (1 << 13)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_HOST_GRP1 (1 << 14)
+#define HV_VMX_ENLIGHTENED_CLEAN_FIELD_ENLIGHTENMENTSCONTROL (1 << 15)
+
+typedef struct _HV_VMX_ENLIGHTENED_VMCS
 {
     UINT32 VersionNumber;
     UINT32 AbortIndicator;
@@ -2374,6 +2564,7 @@ typedef struct
     UINT32 EntryInstructionLength;
     UINT32 TprThreshold;
     UINT64 GuestRip;
+
     UINT32 CleanFields;
     UINT32 Rsvd4;
     UINT32 SyntheticControls;
@@ -2387,15 +2578,29 @@ typedef struct
             UINT32 Reserved : 30;
         };
     } EnlightenmentsControl;
+
     UINT32 VpId;
+    UINT32 Rsvd5;
     UINT64 VmId;
     UINT64 PartitionAssistPage;
-    UINT64 Rsvd5[4];
+    UINT64 Rsvd7[4];
+
     UINT64 GuestBndcfgs;
-    UINT64 Rsvd6[7];
+    UINT64 GuestPerfGlobalCtrl;
+    UINT64 GuestSCet;
+    UINT64 GuestSsp;
+    UINT64 GuestInterruptSspTableAddr;
+    UINT64 GuestLbrCtl;
+    UINT64 Rsvd8[2];
+
     UINT64 XssExitingBitmap;
     UINT64 EnclsExitingBitmap;
-    UINT64 Rsvd7[6];
+    UINT64 HostPerfGlobalCtrl;
+    UINT64 TscMultiplier;
+    UINT64 HostSCet;
+    UINT64 HostSsp;
+    UINT64 HostInterruptSspTableAddr;
+    UINT64 TertiaryProcessorControls;
 } HV_VMX_ENLIGHTENED_VMCS, *PHV_VMX_ENLIGHTENED_VMCS;
 
 //
@@ -2874,7 +3079,8 @@ typedef enum _HV_TRANSLATE_GVA_RESULT_CODE {
 	HvTranslateGvaGpaNoReadAccess = 5,
 	HvTranslateGvaGpaNoWriteAccess = 6,
 	HvTranslateGvaGpaIllegalOverlayAccess = 7,
-	HvTranslateGvaIntercept = 8
+	HvTranslateGvaIntercept = 8,
+    HvTranslateGvaGpaUnaccepted = 9
 } HV_TRANSLATE_GVA_RESULT_CODE, * PHV_TRANSLATE_GVA_RESULT_CODE;
 
 //typedef enum _HV_TRANSLATE_GVA_RESULT_CODE
@@ -4130,7 +4336,105 @@ typedef struct HV_CALL_ATTRIBUTES _HV_OUTPUT_GET_NEXT_CHILD_PARTITION
 //
 // Declare constants and structures for submitting hypercalls.
 //
+
+#define u8 UINT8
+#define u16 UINT16
+#define u32 UINT32
+#define u64 UINT64
+
 #define HV_X64_MAX_HYPERCALL_ELEMENTS ((1<<12) - 1)
+
+#define HV_HYP_PAGE_SHIFT      12
+#define HV_HYP_PAGE_SIZE       BIT(HV_HYP_PAGE_SHIFT)
+
+#define BIT(nr)			(UL(1) << (nr))
+#define BIT_ULL(nr)		(ULL(1) << (nr))
+
+//struct ghcb_save_area {
+//    u8 reserved_0x0[203];
+//    u8 cpl;
+//    u8 reserved_0xcc[116];
+//    u64 xss;
+//    u8 reserved_0x148[24];
+//    u64 dr7;
+//    u8 reserved_0x168[16];
+//    u64 rip;
+//    u8 reserved_0x180[88];
+//    u64 rsp;
+//    u8 reserved_0x1e0[24];
+//    u64 rax;
+//    u8 reserved_0x200[264];
+//    u64 rcx;
+//    u64 rdx;
+//    u64 rbx;
+//    u8 reserved_0x320[8];
+//    u64 rbp;
+//    u64 rsi;
+//    u64 rdi;
+//    u64 r8;
+//    u64 r9;
+//    u64 r10;
+//    u64 r11;
+//    u64 r12;
+//    u64 r13;
+//    u64 r14;
+//    u64 r15;
+//    u8 reserved_0x380[16];
+//    u64 sw_exit_code;
+//    u64 sw_exit_info_1;
+//    u64 sw_exit_info_2;
+//    u64 sw_scratch;
+//    u8 reserved_0x3b0[56];
+//    u64 xcr0;
+//    u8 valid_bitmap[16];
+//    u64 x87_state_gpa;
+//} __packed;
+//
+//#define GHCB_SHARED_BUF_SIZE	2032
+//
+//struct ghcb {
+//    struct ghcb_save_area save;
+//    u8 reserved_save[2048 - sizeof(struct ghcb_save_area)];
+//
+//    u8 shared_buffer[GHCB_SHARED_BUF_SIZE];
+//
+//    u8 reserved_0xff0[10];
+//    u16 protocol_version;	/* negotiated SEV-ES/GHCB protocol version */
+//    u32 ghcb_usage;
+//} __packed;
+//
+//union hv_ghcb {
+//	struct ghcb ghcb;
+//	struct {
+//		UINT32 hypercalldata[509];
+//        UINT64 outputgpa;
+//		union {
+//			union {
+//				struct {
+//                    UINT32 callcode        : 16;
+//                    UINT32 isfast          : 1;
+//                    UINT32 reserved1       : 14;
+//                    UINT32 isnested        : 1;
+//                    UINT32 countofelements : 12;
+//                    UINT32 reserved2       : 4;
+//                    UINT32 repstartindex   : 12;
+//                    UINT32 reserved3       : 4;
+//				};
+//                UINT64 asuint64;
+//			} hypercallinput;
+//			union {
+//				struct {
+//                    UINT16 callstatus;
+//                    UINT16 reserved1;
+//                    UINT32 elementsprocessed : 12;
+//                    UINT32 reserved2         : 20;
+//				};
+//                UINT64 asunit64;
+//			} hypercalloutput;
+//		};
+//        UINT64 reserved2;
+//	} hypercall;
+//} __packed __aligned(HV_HYP_PAGE_SIZE);
 
 typedef union _HV_X64_HYPERCALL_INPUT
 {
@@ -4141,7 +4445,8 @@ typedef union _HV_X64_HYPERCALL_INPUT
     {
         UINT32 CallCode        : 16; // Least significant bits
         UINT32 IsFast          : 1;  // Uses the register based form
-        UINT32 Reserved1       : 15;
+        UINT32 Reserved1       : 14;
+        UINT32 IsNested         : 1;
         UINT32 CountOfElements : 12;
         UINT32 Reserved2       : 4;
         UINT32 RepStartIndex   : 12;
@@ -4740,8 +5045,42 @@ typedef struct HV_CALL_ATTRIBUTES _HV_INPUT_DELETE_VP
 typedef enum _HV_REGISTER_NAME
 {
     // Suspend Registers
-    HvRegisterExplicitSuspend = 0x00000000,
-    HvRegisterInterceptSuspend = 0x00000001,
+    HvRegisterExplicitSuspend               = 0x00000000,
+    HvRegisterInterceptSuspend              = 0x00000001,
+    HvRegisterInstructionEmulationHints     = 0x00000002,   // 	Instruction emulation hints / statistics(if supported)
+    HvRegisterDispatchSuspend               = 0x00000003,             // 	Scheduler dispatch induced suspension
+    HvRegisterInternalActivityState         = 0x00000004, 	    // Internal state summary(read - only)
+
+    HvRegisterHypervisorVersion             = 0x00000100, 	        // Matches CPUID 0x40000002
+    HvRegisterPrivilegesAndFeaturesInfo     = 0x00000200,   // 	Matches CPUID 0x40000003
+    HvRegisterFeaturesInfo                  = 0x00000201,                // 	Matches CPUID 0x40000004
+    HvRegisterImplementationLimitsInfo      = 0x00000202, 	// Matches CPUID 0x40000005
+    HvRegisterHardwareFeaturesInfo          = 0x00000203, 	    // Matches CPUID 0x40000006
+    HvRegisterCpuManagementFeaturesInfo     = 0x00000204, 	// Matches CPUID 0x40000007
+    HvRegisterPasidFeaturesInfo             = 0x00000205,           // 	Matches CPUID 0x40000008
+    HvRegisterNestedVirtFeaturesInfo        = 0x00000207, 	    // Matches CPUID 0x4000000A
+    HvRegisterIptFeaturesInfo               = 0x00000208, 	        // Matches CPUID 0x4000000B
+
+    //HvRegisterGuestCrashP0 =	0x00000210,	// Crash parameter 0
+    //HvRegisterGuestCrashP1 =	0x00000211,	// Crash parameter 1
+    //HvRegisterGuestCrashP2 =	0x00000212,	// Crash parameter 2
+    //HvRegisterGuestCrashP3 =	0x00000213,	// Crash parameter 3
+    //HvRegisterGuestCrashP4 =	0x00000214,	// Crash parameter 4
+    //HvRegisterGuestCrashCtl =	0x00000215,	// Crash control / notification
+
+    HvRegisterProcessorClockFrequency =	0x00000240, //	Nominal core frequency(kHz)
+    HvRegisterInterruptClockFrequency =	0x00000241, //	Timer frequency(kHz)
+
+    HvRegisterGuestIdle	= 0x00000250,	            // Guest idle hint / residency info
+    HvRegisterDebugDeviceOptions = 0x00000260,       //	Debug / device options
+    HvRegisterMemoryZeroingControl = 0x00000270,	    // Memory zeroing behavior control
+
+    HvRegisterPendingEvent0 = 0x00010004,	// Pending event slot 0
+    HvRegisterPendingEvent1	= 0x00010005,	// Pending event slot 1
+    HvRegisterDeliverabilityNotifications = 0x00010006,	// Deliverability notification bitmap
+    HvRegisterPendingEvent2 = 0x00010008,	// Pending event slot 2
+    HvRegisterPendingEvent3	= 0x00010009,	// Pending event slot 3
+
 
     // Pending Interruption Register
     HvX64RegisterPendingInterruption = 0x00010002,
@@ -5008,6 +5347,9 @@ typedef enum _HV_REGISTER_NAME
     HvRegisterVsmVpSecureConfigVtl12 = 0x000D001C,
     HvRegisterVsmVpSecureConfigVtl13 = 0x000D001D,
     HvRegisterVsmVpSecureConfigVtl14 = 0x000D001E,
+
+    HvRegisterVsmVpWaitForTlbLock = 0x000D0020,	 // Wait for TLB lock(synchronization)
+    HvRegisterIsolationCapabilities	= 0x000D0100, // Isolation capability bits
 
     // Mask Registers
     HvX64RegisterCrInterceptControl = 0x000E0000,

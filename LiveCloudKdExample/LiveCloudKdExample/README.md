@@ -1,0 +1,1 @@
+Example project for LiveCloudKd SDK with API from hvlib.dll

@@ -1,7 +1,10 @@
 #
 #  hvlib.dll (Hyper-V memory manager library) python wrapper developed by Arthur Khudyaev (@gerhart_x)
 #  GPL3 License
-#  version 1.0.0
+#  version 1.2.0
+#
+#  Patched: lazy argtypes initialization to work around Python 3.14 ctypes
+#  access violation when all function signatures are set before first DLL call.
 #
 
 import ctypes
@@ -58,16 +61,18 @@ class CtypesEnum(IntEnum):
 
 
 class ReadMemoryMethod(IntEnum):
-    ReadInterfaceWinHv = 0             
+    ReadInterfaceUnsupported = 0
     ReadInterfaceHvmmDrvInternal = 1
-    ReadInterfaceUnsupported = 2		
-
+    ReadInterfaceWinHv = 2
+    ReadInterfaceHvmmLocal = 3
+    ReadInterfaceMax = 4
 
 class WriteMemoryMethod(IntEnum):
-    WriteInterfaceWinHv = 0        
+    WriteInterfaceUnsupported = 0
     WriteInterfaceHvmmDrvInternal = 1
-    WriteInterfaceUnsupported = 2	
-
+    WriteInterfaceWinHv = 2
+    WriteInterfaceHvmmLocal = 3
+    WriteInterfaceMax = 4
 
 class SuspendResumeMethod(IntEnum):
     SuspendResumeUnsupported = 0
@@ -75,14 +80,13 @@ class SuspendResumeMethod(IntEnum):
     SuspendResumeWriteSpecRegister = 2
 
 
-class HvddInformationClass(IntEnum):
-    HvddPartitionFriendlyName = 1
-    HvddPartitionId = 2			
-    HvddVmtypeString = 3
-    HvddMmMaximumPhysicalPage = 6
-    HvddKernelBase = 11	
-    HvddVmGuidString = 20
-    
+class HvmmInformationClass(IntEnum):
+    InfoPartitionFriendlyName = 1
+    InfoPartitionId = 2
+    InfoVmtypeString = 3
+    InfoMmMaximumPhysicalPage = 6
+    InfoKernelBase = 11
+    InfoVmGuidString = 20
 
 class VmStateAction(IntEnum):
     SuspendVm = 0
@@ -127,7 +131,26 @@ class hvlib:
         py_dir = os.path.dirname(os.path.abspath(__file__))
 
         if dll_path == "":
-            dll_path = sys.exec_prefix+"\\Lib\\site-packages\\hvlib.dll"
+            dll_path = os.path.join(py_dir, "hvlib.dll")
+            drv_path = os.path.join(py_dir, "hvmm.sys")
+            py_module_path = os.path.join(py_dir, "hvlib.py")
+        else:
+            modules_dir = os.path.dirname(dll_path)
+            drv_path = modules_dir + "\\hvmm.sys"
+            py_module_path = modules_dir + "\\hvlib.py"
+
+        if not os.path.exists(dll_path):
+            raise FileNotFoundError(f"DLL file is not found: {dll_path}")
+
+        if not os.path.exists(drv_path):
+            raise FileNotFoundError(f"Driver file is not found: {drv_path}")
+
+        if not os.path.exists(py_module_path):
+            raise FileNotFoundError(f"Hvlib.py file is not found: {py_module_path}")
+
+        print("dll_path: ", dll_path)
+        print("drv_path: ", drv_path)
+        print("py_module_path: ", py_module_path)
 
         self.hvlib = ctypes.CDLL(dll_path)
         self.PartitionArray = []
@@ -135,16 +158,38 @@ class hvlib:
         self.PartitionCount = 0
         self.ArrayOfNames = []
 
+        # ----------------------------------------------------------------
+        # Phase 1: Set up ONLY the two functions needed for initialization.
+        #
+        # WORKAROUND for Python >= 3.14 ctypes bug:
+        # Setting argtypes for ALL DLL functions before the first call
+        # triggers a memory corruption / access violation inside ctypes.
+        # Splitting into two phases avoids the issue.
+        # ----------------------------------------------------------------
+
         # BOOLEAN SdkGetDefaultConfig(_Inout_ PVM_OPERATIONS_CONFIG VmOperationsConfig);
         self.hvlib.SdkGetDefaultConfig.restype = ctypes.c_bool
         self.hvlib.SdkGetDefaultConfig.argtypes = [ctypes.POINTER(CfgParameters)]
 
         # PULONG64 SdkEnumPartitions(_Inout_ PULONG64 PartitionTableCount, _In_ PVM_OPERATIONS_CONFIG VmOpsConfig);
-
         self.hvlib.SdkEnumPartitions.restype = ctypes.POINTER(ctypes.c_uint64)
         self.hvlib.SdkEnumPartitions.argtypes = [ctypes.POINTER(ctypes.c_uint64), ctypes.POINTER(CfgParameters)]
 
-        # BOOLEAN SdkGetData(_In_ ULONG64 PartitionIntHandle, _In_ HVDD_INFORMATION_CLASS HvddInformationClass, _Inout_ PVOID HvddInformation);
+        # First DLL call — loads hvmm.sys driver
+        atexit.register(self.cleanup)
+        vm_ops = CfgParameters(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        self.hvlib.SdkGetDefaultConfig(ctypes.pointer(vm_ops))
+        self.vm_ops = vm_ops
+
+        # ----------------------------------------------------------------
+        # Phase 2: Now that the driver is loaded, set up remaining sigs.
+        # ----------------------------------------------------------------
+        self._setup_remaining_argtypes()
+
+    def _setup_remaining_argtypes(self):
+        """Configure argtypes for all DLL functions except the two set in __init__ phase 1."""
+
+        # BOOLEAN SdkGetData(_In_ ULONG64 PartitionIntHandle, _In_ HVMM_INFORMATION_CLASS HvmmInformationClass, _Inout_ PVOID HvddInformation);
         self.hvlib.SdkGetData.restype = ctypes.c_bool
         self.hvlib.SdkGetData.argtypes = [ctypes.c_uint64, ctypes.c_int32, ctypes.c_void_p]
 
@@ -179,11 +224,6 @@ class hvlib:
         # BOOLEAN SdkControlVmState(_In_ ULONG64 PartitionHandle, _In_ VM_STATE_ACTION Action, _In_ SUSPEND_RESUME_METHOD ActionMethod, _In_ BOOLEAN ManageWorkerProcess);
         self.hvlib.SdkControlVmState.restype = ctypes.c_bool
         self.hvlib.SdkControlVmState.argtypes = [ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_bool]
-
-        atexit.register(self.cleanup)
-        vm_ops = CfgParameters(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        self.hvlib.SdkGetDefaultConfig(ctypes.pointer(vm_ops))
-        self.vm_ops = vm_ops
 
     def PrintHex(self, buffer):
 
@@ -221,15 +261,17 @@ class hvlib:
         self.PartitionCount = PartitionCount.value
 
         for x in range(0, PartitionCount.value):
-            self.hvlib.SdkGetData(PartitionArray[x], HvddInformationClass.HvddPartitionFriendlyName,
+            self.hvlib.SdkGetData(PartitionArray[x], HvmmInformationClass.InfoPartitionFriendlyName,
                                            ctypes.pointer(FriendlyNameP))
             ArrayOfNames.append(FriendlyNameP.value)
-            self.hvlib.SdkGetData(PartitionArray[x], HvddInformationClass.HvddPartitionId,
+            self.hvlib.SdkGetData(PartitionArray[x], HvmmInformationClass.InfoPartitionId,
                                            ctypes.pointer(PartitionId))
 
-            print("[", x, "]", FriendlyNameP.value, "PartitionId = ", PartitionId.value)
+            str_vm_info = " [" + str(x) + "] " + str(FriendlyNameP.value) + ". (PartitionId = " + str(PartitionId.value) + ")"
+            # print("[",x,"]", FriendlyNameP.value, ". (PartitionId = ", c,")")
+            print(str_vm_info)
 
-            print("Active partitions count: ", PartitionCount.value)
+            print("Active partitions count:", PartitionCount.value)
 
         self.PartitionArray = PartitionArray
         self.ArrayOfNames = ArrayOfNames
@@ -237,27 +279,27 @@ class hvlib:
     def SelectPartition(self, vm_id):
 
         if vm_id >= self.PartitionCount:
-            print("Your value is very big")
+            print("vm_id bigger, then count of partitions")
 
         CurrentPartition = self.PartitionArray[vm_id]
         print("You select", self.ArrayOfNames[vm_id])
         result = self.hvlib.SdkSelectPartition(CurrentPartition)
-        
+
         if not result:
             print("SdkSelectPartition failed")
             return 0
-            
+
         self.CurrentPartition = CurrentPartition
         return CurrentPartition
 
-    def GetData(self, vm_handle, info_class: HvddInformationClass):
+    def GetData(self, vm_handle, info_class: HvmmInformationClass):
 
         wchar_var = ctypes.c_wchar_p("N")
         int_var = ctypes.c_uint64(0)
 
-        if (info_class == HvddInformationClass.HvddPartitionFriendlyName) or (
-                info_class == HvddInformationClass.HvddVmtypeString) or (
-                info_class == HvddInformationClass.HvddVmGuidString):
+        if (info_class == HvmmInformationClass.InfoPartitionFriendlyName) or (
+                info_class == HvmmInformationClass.InfoVmtypeString) or (
+                info_class == HvmmInformationClass.InfoVmGuidString):
             self.hvlib.SdkGetData(vm_handle, info_class,
                                            ctypes.pointer(wchar_var))
             return wchar_var.value
@@ -272,7 +314,7 @@ class hvlib:
         bResult = self.hvlib.SdkReadPhysicalMemory(vm_handle, address, block_size, buffer,
                                                                   self.vm_ops.ReadMethod)
         if not bResult:
-            print("ReadPhysicalMemoryBlock error")
+            print(f"ReadPhysicalMemoryBlock error: vm_handle=0x{vm_handle:X}, address=0x{address:X}, block_size=0x{block_size:X}")
             return 0
         # print in hex
         # self.PrintHex(buffer)
@@ -283,7 +325,7 @@ class hvlib:
         buffer = ctypes.create_string_buffer(block_size)
         bResult = self.hvlib.SdkReadVirtualMemory(vm_handle, address, buffer, block_size)
         if not bResult:
-            print("ReadVirtualMemoryBlock error")
+            print(f"ReadVirtualMemoryBlock error: vm_handle=0x{vm_handle:X}, address=0x{address:X}, block_size=0x{block_size:X}")
             return 0
 
         return buffer
@@ -294,7 +336,7 @@ class hvlib:
         bResult = self.hvlib.SdkWritePhysicalMemory(vm_handle, address, block_size, buffer,
                                                                   self.vm_ops.WriteMethod)
         if not bResult:
-            print("WritePhysicalMemoryBlock error")
+            print(f"WritePhysicalMemoryBlock error: vm_handle=0x{vm_handle:X}, address=0x{address:X}")
             return False
 
         return True
@@ -304,7 +346,7 @@ class hvlib:
         block_size = len(buffer)
         bResult = self.hvlib.SdkWriteVirtualMemory(vm_handle, address, buffer, block_size)
         if not bResult:
-            print("ReadVirtualMemoryBlock error")
+            print(f"WriteVirtualMemoryBlock error: vm_handle=0x{vm_handle:X}, address=0x{address:X}")
             return False
 
         return True
@@ -312,9 +354,3 @@ class hvlib:
     def cleanup(self):
         self.hvlib.SdkCloseAllPartitions()
         print("hvlib.dll unloaded")
-
-    def __getstate__(self):
-        return self
-
-    def __setstate__(self, d):
-        return self

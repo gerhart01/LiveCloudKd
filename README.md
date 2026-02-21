@@ -2,9 +2,9 @@ This is a fork of LiveCloudKd, which was early developed by Matt Suiche [(www.ms
 
 ## LiveCloudKd (2025)
 
-LiveCloudKd is a tool, that allows you to connect to a Hyper-V guest VM with kd.exe or WinDBG and WinDBG (classic). 
+LiveCloudKd is a tool, that allows you to connect to a Hyper-V guest VM with kd.exe and WinDBG (classic) or WinDBG using EXDI plugin. 
 
-Also, you can use the LiveCloudKd EXDI plugin for attaching to Hyper-V VM.  
+You can use LiveCloudKd EXDI plugin for attaching to Hyper-V VM with kd.exe and WinDBG (classic).  
 
 The tool uses Hyper-V Memory Manager plugin for operations with Hyper-V memory.
 The tool has additional options in comparison with LiveKd from Microsoft Sysinternals Suite:
@@ -14,7 +14,7 @@ The tool has additional options in comparison with LiveKd from Microsoft Sysinte
 3. Support Hyper-V VM with nested virtualization option enabled on Intel-based CPU
 4. Support multilingual Windows  
 
-LiveCloudKd. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v3.0.0.20250226/LiveCloudKd.v3.0.0.20250226-release.zip)  
+LiveCloudKd. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v3.0.0.20260219/LiveCloudKd.v3.0.0.20260219-release.zip)  
 Contains EXDI plugin for static dump view:    
 
 ![WinDBG (classic)](images/image01.png)  
@@ -23,8 +23,8 @@ Contains EXDI plugin for static dump view:
 LiveCloudKd is based on the hvlib.dll library (Hyper-V Memory Manager plugin). Other tools, that were developed using this library:
 
 LiveCloudKd EXDI live debugger.               [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.0.20251103/LiveCloudKd.EXDI.debugger.v1.0.20251103.zip). [Readme](https://github.com/gerhart01/LiveCloudKd/blob/master/ExdiKdSample/LiveDebugging.md)  
-Hyper-V Virtual Machine plugin for MemProcFS. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.5.20250226/leechcore_hyperv_plugin_26.02.2025.zip)  
-Hyper-V Memory Manager plugin for volatility. [Download](https://github.com/gerhart01/Hyper-V-Tools/releases/download/v1.0.20240427/Hyper-V.Memory.Manager.plugin.for.volatility.v1.0.20240427.zip)  
+Hyper-V Virtual Machine plugin for MemProcFS. [Download](https://github.com/gerhart01/LiveCloudKd/releases/download/v1.5.20260219/leechcore_hyperv_plugin_19.02.2026.zip)  
+Hyper-V Memory Manager plugin for volatility. [Download](https://github.com/gerhart01/Hyper-V-Tools/releases/download/v1.0.20260219/Hyper-V.Memory.Manager.plugin.for.volatility.v1.0.20260219.zip)  
 HyperViews.                                   [Download](https://github.com/gerhart01/Hyper-V-Tools/tree/main/HyperViews)  
 
 Also SDK for working with Hyper-V VM memory is available  
@@ -45,7 +45,7 @@ Methods for accessing guest Hyper-V VM memory:
  WriteInterfaceHvmmDrvInternal - write data directly to kernel memory. Faster, than WriteInterfaceWinHv, but uses undocumented structures. The default writing method is WriteInterfaceHvmmDrvInternal.
 ```
 
-Methods for accessing local operation system memory:
+Methods for accessing local operating system memory:
 ```
  ReadInterfaceLocal - uses for reading data from local operation system memory  
  WriteInterfaceLocal - uses for writing data to local operation system memory  
@@ -60,7 +60,7 @@ Windows Server 2016
 Windows 11
 Windows 10
 ```
-and some preview versions of Windows 11 and Windows Server vNext
+and some preview versions of Windows 11 and Windows Server vNext.
 
 Configure symbol path for WinDBG:
 
@@ -94,7 +94,7 @@ $symbol_path = "SRV*$folder*https://msdl.microsoft.com/download/symbols"
 
 For launch:
 
-1. Extract distributive to folder and specify path to WinDBG in RegParam.reg, apply it or use /y command line parameter.
+1. Extract distributive to folder and specify path to WinDBG in HvlibSettingsEditor.exe (in cfg folder) or RegParam.reg, apply it or use /y command line parameter.
     Also, LiveCloudKd can find a path to WinDBG, if it was installed with Windows WDK or SDK.
 2. Install Visual Studio 2022 runtime libraries [Link](https://aka.ms/vs/17/release/vc_redist.x64.exe), if it necessary in your environment.
 3. Start LiveCloudKd.exe with local administrator privileges.
