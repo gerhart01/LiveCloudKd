@@ -1,6 +1,6 @@
 This is a fork of LiveCloudKd, which was early developed by Matt Suiche [(www.msuiche.com)](https://www.msuiche.com): https://github.com/msuiche/LiveCloudKd.
 
-## LiveCloudKd (2025)
+## LiveCloudKd (2026)
 
 LiveCloudKd is a tool, that allows you to connect to a Hyper-V guest VM with kd.exe and WinDBG (classic) or WinDBG using EXDI plugin. 
 
@@ -136,6 +136,7 @@ Usage: LiveCloudKd.exe [/a {0-6}][/b][/m {0-2}][/n {0-9}][/o path][/p][/v {0-2}]
                    5 - Dump RAW guest OS memory (without KDBG scanning)
                    6 - Resume VM
       /b        Close LiveCloudKd automatically after exiting from kd or WinDBG.
+      /f        Force to freeze virtual CPUs of selected virtual machine
       /m        Memory access type.
                    0 - Hypercalls (HvReadGPA and HvWriteGPA)
                    1 - Raw memory
