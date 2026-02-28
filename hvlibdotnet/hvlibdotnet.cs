@@ -131,7 +131,7 @@ namespace Hvlibdotnet
             MACHINE_UNKNOWN = 0,
             MACHINE_X86 = 1,
             MACHINE_AMD64 = 2,
-            MACHINE_ARN64 = 3,
+            MACHINE_ARM64 = 3,
             MACHINE_UNSUPPORTED = 4
         }
 
@@ -214,38 +214,6 @@ namespace Hvlibdotnet
             [FieldOffset(0)] public UInt64 Low64;
             [FieldOffset(8)] public UInt64 High64;
         }
-
-        //// NEW: SYMBOL_INFO structure for symbol enumeration
-        //[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-        //public struct SYMBOL_INFO
-        //{
-        //    public UInt32 SizeOfStruct;
-        //    public UInt32 TypeIndex;
-        //    public UInt64 Reserved1;
-        //    public UInt64 Reserved2;
-        //    public UInt32 Index;
-        //    public UInt32 Size;
-        //    public UInt64 ModBase;
-        //    public UInt32 Flags;
-        //    public UInt64 Value;
-        //    public UInt64 Address;
-        //    public UInt32 Register;
-        //    public UInt32 Scope;
-        //    public UInt32 Tag;
-        //    public UInt32 NameLen;
-        //    public UInt32 MaxNameLen;
-        //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1)]
-        //    public string Name;
-        //}
-
-        //// NEW: SYMBOL_INFO_PACKAGE structure for symbol operations
-        //[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-        //public struct SYMBOL_INFO_PACKAGE
-        //{
-        //    public SYMBOL_INFO si;
-        //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 2001)]
-        //    public string name;
-        //}
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public struct SYMBOL_INFO
