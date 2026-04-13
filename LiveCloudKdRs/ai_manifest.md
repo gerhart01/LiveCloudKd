@@ -9,7 +9,7 @@
 
 | Parameter | Value |
 |-----------|-------|
-| Language | Rust 2021 edition (stable-x86_64-pc-windows-msvc) |
+| Language | Rust 2021 edition (stable-x86_64-pc-windows-msvc - rustc 1.94.1) |
 | Binding | `extern "C"` FFI → hvlib.dll (import lib: hvlib.lib) |
 | Runtime deps | hvlib.dll + hvmm.sys next to the .exe |
 | Privileges | **Administrator** (hvmm.sys load) |
