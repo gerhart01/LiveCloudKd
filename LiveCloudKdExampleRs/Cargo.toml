@@ -1,0 +1,12 @@
+[package]
+name = "livecloudkd-example"
+version = "0.1.0"
+edition = "2021"
+description = "Rust example for LiveCloudKd hvlib.dll"
+
+[[bin]]
+name = "livecloudkd-example"
+path = "src/main.rs"
+
+[dependencies]
+livecloudkd = { path = "../LiveCloudKdRs" }

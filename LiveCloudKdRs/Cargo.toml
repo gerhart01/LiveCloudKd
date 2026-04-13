@@ -1,0 +1,13 @@
+[package]
+name = "livecloudkd"
+version = "0.1.0"
+edition = "2026"
+description = "Rust bindings for hvlib.dll — Hyper-V memory manager library"
+license = "GPL3"
+
+[lib]
+name = "livecloudkd"
+
+[dependencies]
+
+[build-dependencies]
