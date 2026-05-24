@@ -65,6 +65,9 @@ namespace Hvlibdotnet
             HvddGetCr3Kernel,
             HvddGetCr3Hv,
             HvddGetCr3Securekernel,
+            HvddIsVmSuspended,
+            HvddSecureKernelBase,
+            HvddSecureKernelSize,
             //Special set values
             HvddSetMemoryBlock,
             HvddEnlVmcsPointer
@@ -75,7 +78,6 @@ namespace Hvlibdotnet
             ReadInterfaceUnsupported,
             ReadInterfaceHvmmDrvInternal,
             ReadInterfaceWinHv,
-            ReadInterfaceHvmmLocal,
             ReadInterfaceHvmmMax
         }
         public enum WRITE_MEMORY_METHOD
@@ -83,7 +85,6 @@ namespace Hvlibdotnet
             WriteInterfaceUnsupported,
             WriteInterfaceHvmmDrvInternal,
             WriteInterfaceWinHv,
-            WriteInterfaceHvmmLocal,
             WriteInterfaceHvmmMax
         }
 
@@ -100,21 +101,12 @@ namespace Hvlibdotnet
             ResumeVm = 1
         }
 
-        public enum LOG_LEVEL
-        {
-            log_er = 0,
-            log_v1 = 1,
-            log_v2 = 2,
-            log_v3 = 3,
-            log_skip = 4
-        }
-
         public enum GET_CR3_TYPE
         {
             Cr3Process = 0,
-            Cr3Kernel = 0xFFFFFFD,
-            Cr3SecureKernel = 0xFFFFFFE,
-            Cr3Hypervisor = 0xFFFFFFF
+            Cr3Kernel = 1,
+            Cr3SecureKenerl = 2,
+            Cr3Hypervisor = 3
         }
 
         // NEW: Memory access type for address translation
@@ -131,34 +123,15 @@ namespace Hvlibdotnet
             MACHINE_UNKNOWN = 0,
             MACHINE_X86 = 1,
             MACHINE_AMD64 = 2,
-            MACHINE_ARM64 = 3,
-            MACHINE_UNSUPPORTED = 4
+            MACHINE_UNSUPPORTED = 3
         }
 
-        //
         // NEW: Virtual Trust Level enumeration
-        // https://learn.microsoft.com/en-us/virtualization/hyper-v-on-windows/tlfs/datatypes/hv_vtl
-        // The HV_VTL is an 8-bit unsigned integer that identifies a Virtual Trust Level. Valid VTL values range from 0 to 15.
-        //
         public enum VTL_LEVEL
         {
             Vtl0 = 0,
             Vtl1 = 1,
-            Vtl2 = 2,
-            Vtl3 = 3,
-            Vtl4 = 4,
-            Vtl5 = 5,
-            Vtl6 = 6,
-            Vtl7 = 7,
-            Vtl8 = 8,
-            Vtl9 = 9,
-            Vtl10 = 10,
-            Vtl11 = 11,
-            Vtl12 = 12,
-            Vtl13 = 13,
-            Vtl14 = 14,
-            Vtl15 = 15,
-            BadVtl = 16
+            BadVtl = 2
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -167,7 +140,7 @@ namespace Hvlibdotnet
             public READ_MEMORY_METHOD ReadMethod;
             public WRITE_MEMORY_METHOD WriteMethod;
             public SUSPEND_RESUME_METHOD SuspendMethod;
-            public LOG_LEVEL LogLevel;
+            public UInt64 LogLevel;
             [MarshalAs(UnmanagedType.I1)] public bool ForceFreezeCPU;
             [MarshalAs(UnmanagedType.I1)] public bool PausePartition;
             public IntPtr ExdiConsoleHandle;
@@ -180,6 +153,7 @@ namespace Hvlibdotnet
             [MarshalAs(UnmanagedType.I1)] public bool FullCrashDumpEmulation;
             [MarshalAs(UnmanagedType.I1)] public bool EnumGuestOsBuild;
             [MarshalAs(UnmanagedType.I1)] public bool VSMScan;
+            [MarshalAs(UnmanagedType.I1)] public bool LogSilenceMode;
         }
 
         public struct HV_X64_HYPERCALL_INPUT
@@ -215,6 +189,7 @@ namespace Hvlibdotnet
             [FieldOffset(8)] public UInt64 High64;
         }
 
+        // Symbol information structure (matches native SYMBOL_INFO)
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public struct SYMBOL_INFO
         {
@@ -238,6 +213,7 @@ namespace Hvlibdotnet
             public string Name;
         }
 
+        // Symbol information for PowerShell (string-formatted addresses)
         public struct SYMBOL_INFO_PWSH
         {
             public uint SizeOfStruct;
@@ -268,7 +244,7 @@ namespace Hvlibdotnet
         {
             public SYMBOL_INFO Symbol;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2001)] // Buffer for the symbol name
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2001)]
             public byte[] Name;
         }
 
@@ -280,7 +256,10 @@ namespace Hvlibdotnet
         private static extern bool SdkGetDefaultConfig(ref VM_OPERATIONS_CONFIG cfg);
 
         [DllImport("hvlib.dll")]
-        private static extern bool SdkSetDefaultConfig(UInt64 PartitionHandle, ref VM_OPERATIONS_CONFIG cfg);
+        private static extern bool SdkSetPartitionConfig(UInt64 PartitionHandle, ref VM_OPERATIONS_CONFIG cfg);
+
+        [DllImport("hvlib.dll")]
+        private static extern IntPtr SdkGetPartitionConfig(UInt64 PartitionHandle);
 
         [DllImport("hvlib.dll")]
         private static extern IntPtr SdkEnumPartitions(ref UInt64 PartitionCount, ref VM_OPERATIONS_CONFIG cfg);
@@ -322,10 +301,11 @@ namespace Hvlibdotnet
         private static extern UInt64 SdkGetCr3FromPid(UInt64 PartitionHandle, UInt64 Pid, GET_CR3_TYPE Type);
 
         [DllImport("hvlib.dll")]
-        private static extern UInt64 SdkInvokeHypercall(UInt32 HvCallId, bool IsFast, UInt32 RepStartIndex, UInt32 CountOfElements, bool IsNested, ref HVCALL_DATA HvCallData);
+        [return: MarshalAs(UnmanagedType.I1)]
+        private static extern bool SdkInvokeHypercall(UInt32 HvCallId, [MarshalAs(UnmanagedType.I1)] bool IsFast, UInt32 RepStartIndex, UInt32 CountOfElements, [MarshalAs(UnmanagedType.I1)] bool IsNested, IntPtr InputBuffer, IntPtr OutputBuffer);
 
         // ==============================================================================
-        // DLL Import Declarations - NEW FUNCTIONS (VM Control & Introspection)
+        // DLL Import Declarations - NEW FUNCTIONS
         // ==============================================================================
 
         /// <summary>
@@ -353,6 +333,12 @@ namespace Hvlibdotnet
         private static extern MACHINE_TYPE SdkGetMachineType(UInt64 PartitionHandle);
 
         /// <summary>
+        /// Get current VTL for virtual address
+        /// </summary>
+        [DllImport("hvlib.dll")]
+        private static extern VTL_LEVEL SdkGetCurrentVtl(UInt64 PartitionHandle, UInt64 Va);
+
+        /// <summary>
         /// Read virtual processor register
         /// </summary>
         [DllImport("hvlib.dll")]
@@ -365,29 +351,29 @@ namespace Hvlibdotnet
         private static extern bool SdkWriteVpRegister(UInt64 PartitionHandle, UInt32 VpIndex, VTL_LEVEL InputVtl, UInt32 RegisterCode, ref HV_REGISTER_VALUE RegisterValue);
 
         // ==============================================================================
-        // DLL Import Declarations - NEW FUNCTIONS (Symbol Operations)
+        // DLL Import Declarations - Symbol Operations
         // ==============================================================================
 
-        /// <summary>
-        /// Get symbol address by name
-        /// </summary>
         [DllImport("hvlib.dll", CharSet = CharSet.Ansi)]
         private static extern UInt64 SdkSymGetSymbolAddress(
-            UInt64 PartitionHandle,
-            UInt64 ImageBase,
-            UInt32 ImageSize,
+            UInt64 PartitionHandle, UInt64 ImageBase, UInt32 ImageSize,
             [MarshalAs(UnmanagedType.LPStr)] string symbolName,
             MEMORY_ACCESS_TYPE MmAccess);
 
-        /// <summary>
-        /// Enumerate all symbols from a driver
-        /// </summary>
-        [DllImport("hvlib.dll", CharSet = CharSet.Unicode)]
-        private static extern bool SdkSymEnumAllSymbols(UInt64 PartitionHandle, [MarshalAs(UnmanagedType.LPWStr)] string DriverName, [Out] SYMBOL_INFO[] SymbolTable, MEMORY_ACCESS_TYPE MmAccess);
+        [DllImport("hvlib.dll", CharSet = CharSet.Ansi)]
+        private static extern UInt64 SdkSymGetSymbolAddress2(
+            UInt64 PartitionHandle,
+            [MarshalAs(UnmanagedType.LPStr)] string moduleName,
+            [MarshalAs(UnmanagedType.LPStr)] string symbolName,
+            MEMORY_ACCESS_TYPE MmAccess);
 
-        /// <summary>
-        /// Get the length of symbol table for a driver
-        /// </summary>
+        [DllImport("hvlib.dll", CharSet = CharSet.Unicode)]
+        private static extern bool SdkSymEnumAllSymbols(
+            UInt64 PartitionHandle,
+            [MarshalAs(UnmanagedType.LPWStr)] string DriverName,
+            [Out] SYMBOL_INFO[] SymbolTable,
+            MEMORY_ACCESS_TYPE MmAccess);
+
         [DllImport("hvlib.dll", CharSet = CharSet.Unicode)]
         private static extern UInt64 SdkSymEnumAllSymbolsGetTableLength(
             UInt64 PartitionHandle,
@@ -398,26 +384,22 @@ namespace Hvlibdotnet
         // Public API - Existing Functions
         // ==============================================================================
 
-        /// <summary>
-        /// Get default/preferred configuration settings for VM operations
-        /// </summary>
-        /// <param name="cfg">Configuration structure to populate</param>
-        /// <returns>True if successful</returns>
         public static bool GetPreferredSettings(ref VM_OPERATIONS_CONFIG cfg)
         {
             bool bResult = SdkGetDefaultConfig(ref cfg);
             return bResult;
         }
 
-        public static bool SetPreferredSettings(UInt64 PartitionHandle, ref VM_OPERATIONS_CONFIG cfg)
-        {
-            bool bResult = SdkSetDefaultConfig(PartitionHandle, ref cfg);
-            return bResult;
-        }
+        //public static UInt64 GetSdkData2(UInt64 PartitionHandle, HVDD_INFORMATION_CLASS HvddInformationClass)
+        //{
+        //    return SdkGetData2(PartitionHandle, HvddInformationClass);
+        //}
 
-        /// <summary>
-        /// Test function to verify Hvlib is loaded correctly
-        /// </summary>
+        //public static UInt64 GetSdkData(UInt64 PartitionHandle, HVDD_INFORMATION_CLASS HvddInformationClass, out UIntPtr HvddInformationData)
+        //{
+        //    return SdkGetData(PartitionHandle, HvddInformationClass, out HvddInformationData);
+        //}
+
         public static void TestHvLib()
         {
             Console.Write("Hvlib is loaded");
@@ -427,11 +409,6 @@ namespace Hvlibdotnet
 
         private static VM_OPERATIONS_CONFIG cfg;
 
-        /// <summary>
-        /// Enumerate all virtual machine partitions on the system
-        /// </summary>
-        /// <param name="cfg">VM operations configuration to use</param>
-        /// <returns>List of VmListBox objects containing VM handles and names, or null if enumeration failed</returns>
         public static List<VmListBox>? EnumPartitions(ref VM_OPERATIONS_CONFIG cfg)
         {
             UInt64 PartitionCount = 0;
@@ -481,10 +458,7 @@ namespace Hvlibdotnet
             return ListObj;
         }
 
-        /// <summary>
-        /// Enumerate all VM partitions using default configuration
-        /// </summary>
-        /// <returns>List of VmListBox objects containing VM handles and names, or null if enumeration failed</returns>
+
         public static List<VmListBox>? EnumAllPartitions()
         {
             Hvlib.VM_OPERATIONS_CONFIG cfg = new Hvlib.VM_OPERATIONS_CONFIG();
@@ -502,191 +476,78 @@ namespace Hvlibdotnet
             return res;
         }
 
-        /// <summary>
-        /// Select a partition for subsequent operations
-        /// </summary>
-        /// <param name="PartitionHandle">Handle to the partition to select</param>
-        /// <returns>True if successful</returns>
         public static bool SelectPartition(UInt64 PartitionHandle)
         {
             return SdkSelectPartition(PartitionHandle);
         }
 
-        /// <summary>
-        /// Get partition information data
-        /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="HvddInformationClass">Type of information to retrieve</param>
-        /// <param name="HvddInformation">Output information value</param>
-        /// <returns>True if successful</returns>
         public static bool GetPartitionData(UInt64 PartitionHandle, HVDD_INFORMATION_CLASS HvddInformationClass, out UIntPtr HvddInformation)
         {
             return SdkGetData(PartitionHandle, HvddInformationClass, out HvddInformation);
         }
 
-        /// <summary>
-        /// Get partition information data (alternative version returning UInt64)
-        /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="HvddInformationClass">Type of information to retrieve</param>
-        /// <returns>Information value as UInt64</returns>
         public static UInt64 GetPartitionData2(UInt64 PartitionHandle, HVDD_INFORMATION_CLASS HvddInformationClass)
         {
             return SdkGetData2(PartitionHandle, HvddInformationClass);
         }
-
-        /// <summary>
-        /// Get CR3 (page table base) for a specific process ID
-        /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="Pid">Process ID</param>
-        /// <returns>CR3 value (page table base address)</returns>
         public static UInt64 GetCr3FromPid(UInt64 PartitionHandle, UInt64 Pid)
         {
             UIntPtr ProcessId = new UIntPtr(Pid);
 
-            bool bResult = false;
-
-            switch (Pid)
-            {
-                case (ulong)GET_CR3_TYPE.Cr3Kernel:
-                    bResult = SdkGetData(PartitionHandle, HVDD_INFORMATION_CLASS.HvddGetCr3Kernel, out ProcessId);
-                    break;
-
-                case (ulong)GET_CR3_TYPE.Cr3Hypervisor:
-                    bResult = SdkGetData(PartitionHandle, HVDD_INFORMATION_CLASS.HvddGetCr3Hv, out ProcessId);
-                    break;
-
-                case (ulong)GET_CR3_TYPE.Cr3SecureKernel:
-                    bResult = SdkGetData(PartitionHandle, HVDD_INFORMATION_CLASS.HvddGetCr3Securekernel, out ProcessId);
-                    break;
-
-                default:
-                    bResult = SdkGetData(PartitionHandle, HVDD_INFORMATION_CLASS.HvddGetCr3byPid, out ProcessId);
-                    break;
-            }
+            bool bResult = SdkGetData(PartitionHandle, HVDD_INFORMATION_CLASS.HvddGetCr3byPid, out ProcessId);
 
             UInt64 cr3 = ProcessId.ToUInt64();
             return cr3;
         }
 
-        /// <summary>
-        /// Read physical memory from VM partition
-        /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="StartPosition">Physical address to start reading from</param>
-        /// <param name="ReadByteCount">Number of bytes to read</param>
-        /// <param name="ClientBuffer">Buffer to receive data (IntPtr)</param>
-        /// <returns>True if successful</returns>
         public static bool ReadPhysicalMemory(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, IntPtr ClientBuffer)
         {
             return SdkReadPhysicalMemory(PartitionHandle, StartPosition, ReadByteCount, ClientBuffer, Hvlib.cfg.ReadMethod);
         }
 
-        /// <summary>
-        /// Read physical memory from VM partition
-        /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="StartPosition">Physical address to start reading from</param>
-        /// <param name="ReadByteCount">Number of bytes to read</param>
-        /// <param name="ClientBuffer">Buffer to receive data (byte array)</param>
-        /// <returns>True if successful</returns>
         public static bool ReadPhysicalMemory(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, byte[] ClientBuffer)
         {
             return SdkReadPhysicalMemoryByte(PartitionHandle, StartPosition, ReadByteCount, ClientBuffer, Hvlib.cfg.ReadMethod);
         }
 
-        /// <summary>
-        /// Read physical memory from VM partition
-        /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="StartPosition">Physical address to start reading from</param>
-        /// <param name="ReadByteCount">Number of bytes to read</param>
-        /// <param name="ClientBuffer">Buffer to receive data (IntPtr)</param>
-        /// <param name="Method">Buffer to receive data (IntPtr)</param>
-        /// <returns>True if successful</returns>
-        public static bool ReadPhysicalMemoryWithMethod(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, IntPtr ClientBuffer, READ_MEMORY_METHOD Method)
-        {
-            return SdkReadPhysicalMemory(PartitionHandle, StartPosition, ReadByteCount, ClientBuffer, Method);
-        }
-
-        /// <summary>
-        /// Read physical memory from VM partition
-        /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="StartPosition">Physical address to start reading from</param>
-        /// <param name="ReadByteCount">Number of bytes to read</param>
-        /// <param name="ClientBuffer">Buffer to receive data (ulong array)</param>
-        /// <returns>True if successful</returns>
         public static bool ReadPhysicalMemory(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, ulong[] ClientBuffer)
         {
             return SdkReadPhysicalMemoryULong(PartitionHandle, StartPosition, ReadByteCount, ClientBuffer, Hvlib.cfg.ReadMethod);
         }
 
-        /// <summary>
-        /// Write to physical memory in VM partition
-        /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="StartPosition">Physical address to start writing to</param>
-        /// <param name="WriteByteCount">Number of bytes to write</param>
-        /// <param name="ClientBuffer">Buffer containing data to write</param>
-        /// <returns>True if successful</returns>
         public static bool WritePhysicalMemory(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 WriteByteCount, IntPtr ClientBuffer)
         {
             return SdkWritePhysicalMemory(PartitionHandle, StartPosition, WriteByteCount, ClientBuffer, Hvlib.cfg.WriteMethod);
         }
 
-        /// <summary>
-        /// Read virtual memory from VM partition
-        /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="StartPosition">Virtual address to start reading from</param>
-        /// <param name="ReadByteCount">Number of bytes to read</param>
-        /// <param name="ClientBuffer">Buffer to receive data</param>
-        /// <returns>True if successful</returns>
         public static bool ReadVirtualMemory(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, IntPtr ClientBuffer)
         {
             return SdkReadVirtualMemory(PartitionHandle, StartPosition, ClientBuffer, ReadByteCount);
         }
 
-        /// <summary>
-        /// Write to virtual memory in VM partition
-        /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="StartPosition">Virtual address to start writing to</param>
-        /// <param name="WriteByteCount">Number of bytes to write</param>
-        /// <param name="ClientBuffer">Buffer containing data to write</param>
-        /// <returns>True if successful</returns>
         public static bool WriteVirtualMemory(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 WriteByteCount, IntPtr ClientBuffer)
         {
             return SdkWriteVirtualMemory(PartitionHandle, StartPosition, ClientBuffer, WriteByteCount);
         }
 
-        /// <summary>
-        /// Close all open partition handles
-        /// </summary>
         public static void CloseAllPartitions()
         {
             SdkCloseAllPartitions();
         }
 
-        /// <summary>
-        /// Close a specific partition handle
-        /// </summary>
-        /// <param name="PartitionHandle">Handle to the partition to close</param>
         public static void ClosePartition(UInt64 PartitionHandle)
         {
             SdkClosePartition(PartitionHandle);
         }
 
         // ==============================================================================
-        // Public API - NEW FUNCTIONS (VM Control & Introspection)
+        // Public API - NEW FUNCTIONS
         // ==============================================================================
 
         /// <summary>
         /// Set data for partition
         /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
+        /// <param name="PartitionHandle">Handle to partition</param>
         /// <param name="InformationClass">Type of information to set</param>
         /// <param name="Information">Information value</param>
         /// <returns>Result value</returns>
@@ -698,7 +559,7 @@ namespace Hvlibdotnet
         /// <summary>
         /// Suspend virtual machine
         /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
+        /// <param name="PartitionHandle">Handle to partition</param>
         /// <param name="Method">Suspend method (default: PowerShell)</param>
         /// <param name="ManageWorkerProcess">Manage worker process (default: false)</param>
         /// <returns>True if successful</returns>
@@ -710,7 +571,7 @@ namespace Hvlibdotnet
         /// <summary>
         /// Resume virtual machine
         /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
+        /// <param name="PartitionHandle">Handle to partition</param>
         /// <param name="Method">Resume method (default: PowerShell)</param>
         /// <param name="ManageWorkerProcess">Manage worker process (default: false)</param>
         /// <returns>True if successful</returns>
@@ -722,7 +583,7 @@ namespace Hvlibdotnet
         /// <summary>
         /// Control VM state (suspend or resume)
         /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
+        /// <param name="PartitionHandle">Handle to partition</param>
         /// <param name="Action">Action to perform (Suspend or Resume)</param>
         /// <param name="Method">Method to use</param>
         /// <param name="ManageWorkerProcess">Manage worker process</param>
@@ -735,7 +596,7 @@ namespace Hvlibdotnet
         /// <summary>
         /// Get physical address for virtual address (GVA to GPA translation)
         /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
+        /// <param name="PartitionHandle">Handle to partition</param>
         /// <param name="VirtualAddress">Virtual address to translate</param>
         /// <param name="AccessType">Memory access type (default: Virtual)</param>
         /// <returns>Physical address (0 if translation failed)</returns>
@@ -747,7 +608,7 @@ namespace Hvlibdotnet
         /// <summary>
         /// Get machine architecture type
         /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
+        /// <param name="PartitionHandle">Handle to partition</param>
         /// <returns>Machine type (x86, AMD64, etc.)</returns>
         public static MACHINE_TYPE GetMachineType(UInt64 PartitionHandle)
         {
@@ -755,9 +616,20 @@ namespace Hvlibdotnet
         }
 
         /// <summary>
+        /// Get current Virtual Trust Level for virtual address
+        /// </summary>
+        /// <param name="PartitionHandle">Handle to partition</param>
+        /// <param name="VirtualAddress">Virtual address to check</param>
+        /// <returns>VTL level (Vtl0, Vtl1, or BadVtl)</returns>
+        public static VTL_LEVEL GetCurrentVtl(UInt64 PartitionHandle, UInt64 VirtualAddress)
+        {
+            return SdkGetCurrentVtl(PartitionHandle, VirtualAddress);
+        }
+
+        /// <summary>
         /// Read virtual processor register
         /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
+        /// <param name="PartitionHandle">Handle to partition</param>
         /// <param name="VpIndex">Virtual processor index</param>
         /// <param name="Vtl">Virtual Trust Level</param>
         /// <param name="RegisterCode">Register code (e.g., HV_X64_REGISTER_RIP)</param>
@@ -772,7 +644,7 @@ namespace Hvlibdotnet
         /// <summary>
         /// Write virtual processor register
         /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
+        /// <param name="PartitionHandle">Handle to partition</param>
         /// <param name="VpIndex">Virtual processor index</param>
         /// <param name="Vtl">Virtual Trust Level</param>
         /// <param name="RegisterCode">Register code (e.g., HV_X64_REGISTER_RIP)</param>
@@ -784,19 +656,201 @@ namespace Hvlibdotnet
         }
 
         // ==============================================================================
-        // Public API - NEW FUNCTIONS (Symbol Operations)
+        // Public API - Partition Configuration
+        // ==============================================================================
+
+        public static bool SetPartitionConfig(UInt64 PartitionHandle, ref VM_OPERATIONS_CONFIG cfg)
+        {
+            return SdkSetPartitionConfig(PartitionHandle, ref cfg);
+        }
+
+        public static VM_OPERATIONS_CONFIG GetPartitionConfig(UInt64 PartitionHandle)
+        {
+            IntPtr ptr = SdkGetPartitionConfig(PartitionHandle);
+            if (ptr == IntPtr.Zero)
+                return new VM_OPERATIONS_CONFIG();
+            return Marshal.PtrToStructure<VM_OPERATIONS_CONFIG>(ptr);
+        }
+
+        public static bool SetPreferredSettings(UInt64 PartitionHandle, ref VM_OPERATIONS_CONFIG cfg)
+        {
+            return SdkSetPartitionConfig(PartitionHandle, ref cfg);
+        }
+
+        /// <summary>
+        /// Update the internal static cfg.WriteMethod field
+        /// </summary>
+        public static void SetWriteMethod(WRITE_MEMORY_METHOD Method)
+        {
+            Hvlib.cfg.WriteMethod = Method;
+        }
+
+        /// <summary>
+        /// Get the current internal WriteMethod
+        /// </summary>
+        public static WRITE_MEMORY_METHOD GetWriteMethod()
+        {
+            return Hvlib.cfg.WriteMethod;
+        }
+
+        /// <summary>
+        /// Write physical memory with explicit write method
+        /// </summary>
+        public static bool WritePhysicalMemoryEx(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 WriteByteCount, IntPtr ClientBuffer, WRITE_MEMORY_METHOD Method)
+        {
+            return SdkWritePhysicalMemory(PartitionHandle, StartPosition, WriteByteCount, ClientBuffer, Method);
+        }
+
+        /// <summary>
+        /// Read physical memory with explicit read method
+        /// </summary>
+        public static bool ReadPhysicalMemoryWithMethod(UInt64 PartitionHandle, UInt64 StartPosition, UInt64 ReadByteCount, IntPtr ClientBuffer, READ_MEMORY_METHOD Method)
+        {
+            return SdkReadPhysicalMemory(PartitionHandle, StartPosition, ReadByteCount, ClientBuffer, Method);
+        }
+
+        // ==============================================================================
+        // Public API - Hypercall
         // ==============================================================================
 
         /// <summary>
-        /// Get the number of symbols in a driver's symbol table
+        /// Result of a hypercall invocation via InvokeHypercallBytes.
         /// </summary>
-        /// <param name="PartitionHandle">Partition handle</param>
-        /// <param name="DriverName">Name of the driver (e.g., "ntoskrnl.exe")</param>
-        /// <param name="AccessType">Memory access type (default: Virtual)</param>
-        /// <returns>Number of symbols (0 if driver not found or no symbols)</returns>
+        public struct HypercallResult
+        {
+            /// <summary>True if the SDK call succeeded.</summary>
+            public bool Ok;
+            /// <summary>Raw output page data (up to 4096 bytes).</summary>
+            public byte[] OutputData;
+        }
+
+        /// <summary>
+        /// High-level hypercall: accepts byte[] input, returns byte[] output.
+        /// Handles all unmanaged buffer allocation/deallocation internally.
+        ///
+        /// This is the universal entry point — the caller serializes the
+        /// hypercall-specific input structure into a byte array, and this
+        /// method handles the rest (allocate pages, copy in, call SDK,
+        /// copy out, free pages).
+        ///
+        /// Usage from PowerShell:
+        ///   $r = [Hvlibdotnet.Hvlib]::InvokeHypercallBytes(0x0053, $inputBytes, 24)
+        ///   $r.Ok          # bool
+        ///   $r.OutputData  # byte[]
+        /// </summary>
+        /// <param name="callCode">Hypercall code (e.g. 0x0053 for HvCallReadGpa)</param>
+        /// <param name="inputData">Serialized input structure (may be null)</param>
+        /// <param name="outputSize">Expected output size in bytes (clamped to 4096)</param>
+        /// <param name="isFast">Use fast (register-only) hypercall</param>
+        /// <param name="countOfElements">Rep count for rep hypercalls</param>
+        /// <param name="repStartIndex">Rep start index for rep hypercalls</param>
+        /// <param name="isNested">Nested hypercall flag</param>
+        /// <returns>HypercallResult with Ok and OutputData</returns>
+        public static HypercallResult InvokeHypercallBytes(
+            UInt32 callCode,
+            byte[]? inputData,
+            int outputSize,
+            bool isFast = false,
+            UInt32 countOfElements = 0,
+            UInt32 repStartIndex = 0,
+            bool isNested = false)
+        {
+            const int PageSize = 0x1000;
+            int clampedOutput = Math.Min(Math.Max(outputSize, 0), PageSize);
+
+            IntPtr inputBuf = Marshal.AllocHGlobal(PageSize);
+            IntPtr outputBuf = Marshal.AllocHGlobal(PageSize);
+            try
+            {
+                // Zero both pages
+                byte[] zeroes = new byte[PageSize];
+                Marshal.Copy(zeroes, 0, inputBuf, PageSize);
+                Marshal.Copy(zeroes, 0, outputBuf, PageSize);
+
+                // Copy input data
+                if (inputData != null && inputData.Length > 0)
+                {
+                    Marshal.Copy(inputData, 0, inputBuf,
+                                 Math.Min(inputData.Length, PageSize));
+                }
+
+                bool ok = SdkInvokeHypercall(
+                    callCode, isFast, repStartIndex, countOfElements,
+                    isNested, inputBuf, outputBuf);
+
+                // Copy output
+                byte[] output = new byte[clampedOutput];
+                if (clampedOutput > 0)
+                    Marshal.Copy(outputBuf, output, 0, clampedOutput);
+
+                return new HypercallResult { Ok = ok, OutputData = output };
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(inputBuf);
+                Marshal.FreeHGlobal(outputBuf);
+            }
+        }
+
+        /// <summary>
+        /// Invoke a hypervisor hypercall. Parameters are extracted from HVCALL_DATA,
+        /// InputVA/OutputVA are passed as raw pointers per SDK signature.
+        /// Returns true on success; hypercall result is stored in HvCallData.result.
+        /// </summary>
+        public static bool InvokeHypercall(ref HVCALL_DATA HvCallData)
+        {
+            return SdkInvokeHypercall(
+                HvCallData.HvCallId.CallCode,
+                HvCallData.HvCallId.IsFast,
+                HvCallData.HvCallId.RepStartIndex,
+                HvCallData.HvCallId.CountOfElements,
+                HvCallData.HvCallId.IsNested,
+                HvCallData.InputVA,
+                HvCallData.OutputVA);
+        }
+
+        /// <summary>
+        /// Invoke a hypervisor hypercall with explicit parameters matching the SDK header:
+        /// SdkInvokeHypercall(HvCallId, IsFast, RepStartIndex, CountOfElements, IsNested, InputBuffer, OutputBuffer)
+        /// </summary>
+        public static bool InvokeHypercall(UInt32 HvCallId, bool IsFast, UInt32 RepStartIndex, UInt32 CountOfElements, bool IsNested, IntPtr InputBuffer, IntPtr OutputBuffer)
+        {
+            return SdkInvokeHypercall(HvCallId, IsFast, RepStartIndex, CountOfElements, IsNested, InputBuffer, OutputBuffer);
+        }
+
+        /// <summary>
+        /// Modify VTL protection mask for a physical page via HvModifyVtlProtectionMask hypercall (0x000C).
+        /// </summary>
+        public static UInt64 ModifyVtlProtection(UInt64 PartitionId, UInt64 PhysicalAddress)
+        {
+            byte[] inputStruct = new byte[24];
+            BitConverter.GetBytes(PartitionId).CopyTo(inputStruct, 0);
+            BitConverter.GetBytes((UInt32)0x05).CopyTo(inputStruct, 8);
+            BitConverter.GetBytes((UInt32)0x11).CopyTo(inputStruct, 12);
+            BitConverter.GetBytes(PhysicalAddress >> 12).CopyTo(inputStruct, 16);
+
+            var result = InvokeHypercallBytes(0x000C, inputStruct, 0,
+                countOfElements: 1);
+            return result.Ok ? (UInt64)0 : (UInt64)1;
+        }
+
+        // ==============================================================================
+        // Public API - Symbol Operations
+        // ==============================================================================
+
         public static UInt64 GetSymbolTableLength(UInt64 PartitionHandle, string DriverName, MEMORY_ACCESS_TYPE AccessType = MEMORY_ACCESS_TYPE.MmVirtualMemory)
         {
             return SdkSymEnumAllSymbolsGetTableLength(PartitionHandle, DriverName, AccessType);
+        }
+
+        public static UInt64 GetSymbolAddress(UInt64 PartitionHandle, UInt64 ImageBase, UInt32 ImageSize, string SymbolName, MEMORY_ACCESS_TYPE AccessType = MEMORY_ACCESS_TYPE.MmVirtualMemory)
+        {
+            return SdkSymGetSymbolAddress(PartitionHandle, ImageBase, ImageSize, SymbolName, AccessType);
+        }
+
+        public static UInt64 GetSymbolAddress2(UInt64 PartitionHandle, string ModuleName, string SymbolName, MEMORY_ACCESS_TYPE AccessType = MEMORY_ACCESS_TYPE.MmVirtualMemory)
+        {
+            return SdkSymGetSymbolAddress2(PartitionHandle, ModuleName, SymbolName, AccessType);
         }
 
         public static List<SYMBOL_INFO_PWSH>? GetAllSymbolsForModule(IntPtr Handle, String ModuleName)
@@ -848,6 +902,108 @@ namespace Hvlibdotnet
             }
 
             return ListObj;
+        }
+
+        // ==============================================================================
+        // Public API - Small Utilities
+        // ==============================================================================
+        //
+        // x86-64 page-table walk (ResolvePageTableAddress) and the VTL1 read-with-
+        // fallback helper (ReadVirtualMemoryWithFallback) used to live here. They
+        // were moved back into PowerShell so scripts can inspect / tweak the walk
+        // on the fly during VTL1 mapping debugging. The PFN-mask constants moved
+        // with them (each script declares its own).
+
+        /// <summary>
+        /// Read a single 8-byte (UInt64) value from guest physical memory.
+        /// Returns 0 on failure.
+        /// </summary>
+        public static ulong ReadPhysicalUInt64(ulong PartitionHandle, ulong PhysicalAddress)
+        {
+            ulong[] buf = new ulong[1];
+            if (!ReadPhysicalMemory(PartitionHandle, PhysicalAddress, 8, buf))
+                return 0UL;
+            return buf[0];
+        }
+
+        /// <summary>
+        /// Read virtual memory into a byte[] buffer. Convenience overload around the
+        /// existing IntPtr-based ReadVirtualMemory.
+        /// </summary>
+        public static byte[]? ReadVirtualMemory(ulong PartitionHandle, ulong VirtualAddress, int Size)
+        {
+            if (Size <= 0) return null;
+            IntPtr buf = Marshal.AllocHGlobal(Size);
+            try
+            {
+                if (!ReadVirtualMemory(PartitionHandle, VirtualAddress, (ulong)Size, buf))
+                    return null;
+                byte[] data = new byte[Size];
+                Marshal.Copy(buf, data, 0, Size);
+                return data;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(buf);
+            }
+        }
+
+        /// <summary>
+        /// Format a byte buffer as a hex dump: address + hex pairs + ASCII gutter.
+        /// Returns one string per line; the caller chooses how to render them.
+        /// </summary>
+        public static string[] FormatHexDump(byte[] Bytes, ulong BaseAddress = 0, int BytesPerLine = 16)
+        {
+            if (Bytes == null || Bytes.Length == 0) return new[] { "<empty>" };
+            if (BytesPerLine <= 0) BytesPerLine = 16;
+
+            var lines = new List<string>((Bytes.Length + BytesPerLine - 1) / BytesPerLine);
+            var sb = new System.Text.StringBuilder(80);
+
+            for (int i = 0; i < Bytes.Length; i += BytesPerLine)
+            {
+                sb.Clear();
+                sb.AppendFormat("{0:X16}  ", BaseAddress + (ulong)i);
+
+                // Hex pairs (with a wider gap between halves for readability)
+                for (int j = 0; j < BytesPerLine; j++)
+                {
+                    int idx = i + j;
+                    if (idx < Bytes.Length) sb.AppendFormat("{0:X2} ", Bytes[idx]);
+                    else sb.Append("   ");
+                    if (j == 7) sb.Append(' ');
+                }
+                sb.Append(' ');
+
+                // ASCII gutter
+                for (int j = 0; j < BytesPerLine; j++)
+                {
+                    int idx = i + j;
+                    if (idx >= Bytes.Length) break;
+                    byte b = Bytes[idx];
+                    sb.Append((b >= 0x20 && b <= 0x7E) ? (char)b : '.');
+                }
+
+                lines.Add(sb.ToString());
+            }
+            return lines.ToArray();
+        }
+
+        /// <summary>
+        /// Compare a Length-byte window in two arrays. Returns true if equal.
+        /// Out-of-range offsets/lengths return false (no exception).
+        /// </summary>
+        public static bool BytesEqual(byte[] A, byte[] B, int OffsetA, int OffsetB, int Length)
+        {
+            if (A == null || B == null) return false;
+            if (Length < 0) return false;
+            if (OffsetA < 0 || OffsetB < 0) return false;
+            if (OffsetA + Length > A.Length) return false;
+            if (OffsetB + Length > B.Length) return false;
+
+            for (int i = 0; i < Length; i++)
+                if (A[OffsetA + i] != B[OffsetB + i]) return false;
+            return true;
         }
     }
 }
