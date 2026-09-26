@@ -7,10 +7,36 @@ extern BOOLEAN bIsPsGetCurrentPsPatched;
 NTSTATUS DeviceControlRoutine( IN PDEVICE_OBJECT fdo, IN PIRP Irp );
 VOID     UnloadRoutine(IN PDRIVER_OBJECT DriverObject);
 NTSTATUS Create_File_IRPprocessing(IN PDEVICE_OBJECT fdo, IN PIRP Irp);
+NTSTATUS Cleanup_IRPprocessing(IN PDEVICE_OBJECT fdo, IN PIRP Irp);
 NTSTATUS Close_HandleIRPprocessing(IN PDEVICE_OBJECT fdo, IN PIRP Irp);
 NTSTATUS ReadWrite_IRPhandler(IN PDEVICE_OBJECT fdo, IN PIRP Irp);
 
 KSPIN_LOCK MySpinLock;
+
+static HVMM_IOCTL_STAT g_IoctlStats[HVMM_IOCTL_STAT_SLOTS];
+
+VOID HvmmNoteIoctl(ULONG Code, NTSTATUS Status, ULONG Bytes)
+{
+	ULONG i;
+
+	for (i = 0; i < HVMM_IOCTL_STAT_SLOTS; i++) {
+		if (g_IoctlStats[i].Code == Code || g_IoctlStats[i].Code == 0) {
+			g_IoctlStats[i].Code = Code;
+			g_IoctlStats[i].Calls++;
+			if (!NT_SUCCESS(Status) || Bytes == 0) {
+				g_IoctlStats[i].Failures++;
+				g_IoctlStats[i].LastStatus = (UINT32)Status;
+			}
+			return;
+		}
+	}
+}
+
+VOID HvmmCopyIoctlStats(PHVMM_IOCTL_STAT Stats, ULONG Slots)
+{
+	ULONG n = Slots < HVMM_IOCTL_STAT_SLOTS ? Slots : HVMM_IOCTL_STAT_SLOTS;
+	RtlCopyMemory(Stats, g_IoctlStats, n * sizeof(HVMM_IOCTL_STAT));
+}
 
 #define HVMM_MEMORY_TAG 'mmvH'
 
@@ -46,6 +72,7 @@ NTSTATUS DriverEntry( IN PDRIVER_OBJECT DriverObject,
 
 	DriverObject->DriverUnload = UnloadRoutine;
 	DriverObject->MajorFunction[IRP_MJ_CREATE]= Create_File_IRPprocessing;
+	DriverObject->MajorFunction[IRP_MJ_CLEANUP] = Cleanup_IRPprocessing;
 	DriverObject->MajorFunction[IRP_MJ_CLOSE] = Close_HandleIRPprocessing;
 	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL]= DeviceControlRoutine;
     DriverObject->MajorFunction[IRP_MJ_READ] = ReadWrite_IRPhandler;
@@ -103,13 +130,52 @@ NTSTATUS ReadWrite_IRPhandler( IN PDEVICE_OBJECT fdo, IN PIRP Irp )
 
 NTSTATUS Create_File_IRPprocessing(IN PDEVICE_OBJECT fdo,IN PIRP Irp)
 {
+	PIO_STACK_LOCATION IrpStack = IoGetCurrentIrpStackLocation(Irp);
 	UNREFERENCED_PARAMETER(fdo);
-	return CompleteIrp(Irp,STATUS_SUCCESS,0); 
+
+	//
+	// Give the handle its own guest-mapping list. IOCTL_MAP_GPA_RANGE hangs mappings here and
+	// IRP_MJ_CLEANUP tears them down.
+	//
+
+	if (IrpStack->FileObject != NULL) {
+		PHVMM_FILE_CONTEXT pFileContext = (PHVMM_FILE_CONTEXT)HvmmPoolAlloc(sizeof(HVMM_FILE_CONTEXT));
+		if (pFileContext != NULL) {
+			KeInitializeSpinLock(&pFileContext->Lock);
+			InitializeListHead(&pFileContext->MappingList);
+			IrpStack->FileObject->FsContext2 = pFileContext;
+		}
+	}
+
+	return CompleteIrp(Irp,STATUS_SUCCESS,0);
+}
+
+NTSTATUS Cleanup_IRPprocessing(IN PDEVICE_OBJECT fdo,IN PIRP Irp)
+{
+	PIO_STACK_LOCATION IrpStack = IoGetCurrentIrpStackLocation(Irp);
+	UNREFERENCED_PARAMETER(fdo);
+
+	if (IrpStack->FileObject != NULL) {
+		VidCleanupGpaMappings(IrpStack->FileObject);
+	}
+
+	return CompleteIrp(Irp,STATUS_SUCCESS,0);
 }
 
 NTSTATUS Close_HandleIRPprocessing(IN PDEVICE_OBJECT fdo,IN PIRP Irp)
 {
+	PIO_STACK_LOCATION IrpStack = IoGetCurrentIrpStackLocation(Irp);
 	UNREFERENCED_PARAMETER(fdo);
+
+	if (IrpStack->FileObject != NULL && IrpStack->FileObject->FsContext2 != NULL) {
+		//
+		// Cleanup already unmapped everything; free the list context and drop the pointer.
+		//
+		VidCleanupGpaMappings(IrpStack->FileObject);
+		HvmmPoolFree(IrpStack->FileObject->FsContext2);
+		IrpStack->FileObject->FsContext2 = NULL;
+	}
+
 	return CompleteIrp(Irp,STATUS_SUCCESS,0);
 }
 
@@ -300,11 +366,61 @@ NTSTATUS DeviceControlRoutine( IN PDEVICE_OBJECT fdo, IN PIRP Irp )
 		}
 		break;
 	}
+	case IOCTL_QUERY_MAPPING_SUPPORT:
+	{
+		ULONG QueryBytesReturned = 0;
+		if (VidQueryMappingSupport(pInputBuffer, uInputBufLen, uOutBufLen, &QueryBytesReturned) == TRUE) {
+			BytesTxd = QueryBytesReturned;
+		}
+		else {
+			status = STATUS_INVALID_PARAMETER;
+			BytesTxd = 0;
+		}
+		break;
+	}
+	case IOCTL_MAP_GPA_RANGE:
+	{
+		ULONG MapBytesReturned = 0;
+		if (VidMapGpaRange(IrpStack->FileObject, pInputBuffer, uInputBufLen, uOutBufLen, &MapBytesReturned) == TRUE) {
+			BytesTxd = MapBytesReturned;
+		}
+		else {
+			status = STATUS_UNSUCCESSFUL;
+			BytesTxd = 0;
+		}
+		break;
+	}
+	case IOCTL_QUERY_PARTITION_LAYOUT:
+	{
+		ULONG LayoutBytesReturned = 0;
+		if (VidQueryPartitionLayout(pInputBuffer, uInputBufLen, uOutBufLen, &LayoutBytesReturned) == TRUE) {
+			BytesTxd = LayoutBytesReturned;
+		}
+		else {
+			status = STATUS_UNSUCCESSFUL;
+			BytesTxd = 0;
+		}
+		break;
+	}
+	case IOCTL_UNMAP_GPA_RANGE:
+	{
+		if (VidUnmapGpaRange(IrpStack->FileObject, pInputBuffer, uInputBufLen) == TRUE) {
+			BytesTxd = 0;
+		}
+		else {
+			status = STATUS_UNSUCCESSFUL;
+			BytesTxd = 0;
+		}
+		break;
+	}
 
 	default: status = STATUS_INVALID_DEVICE_REQUEST;
 	}
 End:
-return CompleteIrp(Irp,status,BytesTxd); 
+	if (ControlCode != IOCTL_QUERY_PARTITION_LAYOUT) {
+		HvmmNoteIoctl(ControlCode, status, BytesTxd);
+	}
+return CompleteIrp(Irp,status,BytesTxd);
 }
 
 

@@ -22,3 +22,26 @@ WriteFileSynchronous(
 	PVOID Buffer,
 	ULONG NbOfBytesToWrite
 );
+
+//
+// MappedMemoryDemo.c: verification and benchmark of the mapped guest memory path.
+//
+
+BOOLEAN MappedMemoryDemo(ULONG64 Partition);
+VOID MappedMemoryLayoutReport(ULONG64 Partition);
+VOID MappedMemoryEnumDump(ULONG64 Partition);
+
+//
+// Unattended run: "LiveCloudKdExample.exe <vm index> <action>" answers every prompt itself
+// (no VM suspend, no lifecycle step) and exits without waiting for a key. Both stay -1 when
+// the program is started without arguments.
+//
+
+extern int g_AutoVmId;
+extern int g_AutoActionId;
+
+//
+// Read one key from the console, or take AutoAnswer on an unattended run.
+//
+
+int DemoReadKey(int AutoAnswer);

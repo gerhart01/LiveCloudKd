@@ -162,15 +162,17 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <CompileAs>CompileAsC</CompileAs>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\LiveCloudKdSdk\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>hvlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\LiveCloudKdSdk\files;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy /Y "$(ProjectDir)..\..\LiveCloudKdSdk\files\hvlib.dll" "$(OutDir)"
+if exist "$(ProjectDir)..\..\hvmm\x64\Release\hvmm.sys" (copy /Y "$(ProjectDir)..\..\hvmm\x64\Release\hvmm.sys" "$(OutDir)") else (copy /Y "$(ProjectDir)..\..\LiveCloudKdSdk\files\hvmm.sys" "$(OutDir)")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -225,6 +227,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <CompileAs>CompileAsC</CompileAs>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\LiveCloudKdSdk\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -232,10 +235,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>hvlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\LiveCloudKdSdk\files;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy /Y "$(ProjectDir)..\..\LiveCloudKdSdk\files\hvlib.dll" "$(OutDir)"
+if exist "$(ProjectDir)..\..\hvmm\x64\Release\hvmm.sys" (copy /Y "$(ProjectDir)..\..\hvmm\x64\Release\hvmm.sys" "$(OutDir)") else (copy /Y "$(ProjectDir)..\..\LiveCloudKdSdk\files\hvmm.sys" "$(OutDir)")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -264,9 +268,12 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\LiveCloudKdSdk\HvmmMappedMemory.c" />
     <ClCompile Include="LiveCloudKdExample.c" />
+    <ClCompile Include="MappedMemoryDemo.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\LiveCloudKdSdk\public\HvmmMappedMemory.h" />
     <ClInclude Include="LiveCloudKdExample.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

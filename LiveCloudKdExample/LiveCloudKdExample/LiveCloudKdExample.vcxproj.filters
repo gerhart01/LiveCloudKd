@@ -18,9 +18,18 @@
     <ClCompile Include="LiveCloudKdExample.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MappedMemoryDemo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LiveCloudKdSdk\HvmmMappedMemory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LiveCloudKdExample.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LiveCloudKdSdk\public\HvmmMappedMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -13,6 +13,7 @@
 //
 
 #include "leechcore_device_hvmm.h"
+extern PHVMM_MAPPED_MEMORY g_MappedForHost;
 
 READ_MEMORY_METHOD g_MemoryReadInterfaceType = ReadInterfaceHvmmDrvInternal;
 WRITE_MEMORY_METHOD g_MemoryWriteInterfaceType = WriteInterfaceHvmmDrvInternal;
@@ -250,6 +251,26 @@ BOOL HVMMStart(_Inout_ PLC_CONTEXT ctxLC)
 	}
 
 	ctx->Partition = g_Partition;
+
+	if (ctx->MappedRequested)
+	{
+		HANDLE DeviceHandle = (ctx->hFile == (HANDLE)1) ? NULL : ctx->hFile;
+
+		if (HvmmMappedOpen(ctx->Partition, DeviceHandle, &ctx->Mapped))
+		{
+			g_MappedForHost = ctx->Mapped;
+			lcprintf(ctxLC, "DEVICE_HVMM: guest memory mapped read-only: %llu MB of %llu MB in %lu chunks.\n",
+				ctx->Mapped->MappedBytes >> 20, ctx->Mapped->RunBytes >> 20, ctx->Mapped->ChunkCount);
+		}
+		else if (GetLastError() == ERROR_NOT_SUPPORTED)
+		{
+			lcprintf(ctxLC, "DEVICE_HVMM: the loaded hvmm.sys has no mapping support, reads go through the driver.\n");
+		}
+		else
+		{
+			lcprintf(ctxLC, "DEVICE_HVMM: guest memory could not be mapped (not a full VM?), reads go through the driver.\n");
+		}
+	}
 
 	SdkGetData(g_Partition, InfoMmMaximumPhysicalPage, &ctx->paMax);
 	ctx->paMax *= PAGE_SIZE;

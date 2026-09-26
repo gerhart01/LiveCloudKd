@@ -3,3 +3,12 @@
 *.tlog
 *.ipch
 *.pdb
+
+# Visual Studio / WDK build outputs
+x64/
+
+# build-time junctions for the LeechCore plugin (see leechcore_device_hvmm.vcxproj)
+/LeechCore/
+/files/
+/hvlib/
+

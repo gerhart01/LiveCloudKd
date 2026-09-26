@@ -119,22 +119,22 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)LeechCore\includes;$(SolutionDir)LeechCore\leechcore;$(SolutionDir)hvlib\hvlib\include\public;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\LiveCloudKdSdk\public;$(SolutionDir)LeechCore\includes;$(SolutionDir)LeechCore\leechcore;$(SolutionDir)hvlib\hvlib\include\public;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)LeechCore\includes\lib64\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)LeechCore\leechcore;$(SolutionDir)hvlib\hvlib\include\public;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\LiveCloudKdSdk\public;$(SolutionDir)LeechCore\leechcore;$(SolutionDir)hvlib\hvlib\include\public;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)LeechCore\includes\lib64\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)LeechCore\includes;$(SolutionDir)LeechCore\leechcore;$(SolutionDir)hvlib\hvlib\include\public;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\LiveCloudKdSdk\public;$(SolutionDir)LeechCore\includes;$(SolutionDir)LeechCore\leechcore;$(SolutionDir)hvlib\hvlib\include\public;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)LeechCore\includes\lib64\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)LeechCore\leechcore;$(SolutionDir)hvlib\hvlib\include\public;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\LiveCloudKdSdk\public;$(SolutionDir)LeechCore\leechcore;$(SolutionDir)hvlib\hvlib\include\public;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)LeechCore\includes\lib64\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -271,9 +271,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\LeechCore\leechcore\util.c" />
+    <ClCompile Include="..\LeechCore\leechcore\charutil.c" />
     <ClCompile Include="leechcore_device_hvmm.c" />
     <ClCompile Include="leechcore_device_hvmm_internal.c" />
     <ClCompile Include="leechcore_device_hvmm_misc.c" />
+    <ClCompile Include="..\LiveCloudKdSdk\HvmmMappedMemory.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
