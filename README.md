@@ -51,7 +51,7 @@ Methods for accessing local operating system memory:
  WriteInterfaceLocal - uses for writing data to local operation system memory  
 ```
 
-LiveCloudKd was tested on WinDBG from WDK 1809 - 25H2 on
+LiveCloudKd was tested on WinDBG from WDK 1809 - 26H2 on
 ```
 Windows Server 2025
 Windows Server 2022 
@@ -86,7 +86,9 @@ for Hyper-V VMs enough:
 $folder = "C:\Symbols"
 New-Item -Type Directory $folder
 compact /c /i /q /s:$folder
-$symbol_path = "SRV*$folder*https://msdl.microsoft.com/download/symbols"
+$symbol_path = "SRV*$folder*https://msdl.microsoft.com/download/symbols";
+"SRV*$folder*https://driver-symbols.nvidia.com/;"+
+"SRV*$folder*https://download.amd.com/dir/bin"
 [Environment]::SetEnvironmentVariable("_NT_SYMBOL_PATH",$symbol_path,
 "Machine")
 
@@ -96,9 +98,11 @@ For launch:
 
 1. Extract distributive to folder and specify path to WinDBG in HvlibSettingsEditor.exe (in cfg folder) or RegParam.reg, apply it or use /y command line parameter.
     Also, LiveCloudKd can find a path to WinDBG, if it was installed with Windows WDK or SDK.
-2. Install Visual Studio 2022 runtime libraries [Link](https://aka.ms/vs/17/release/vc_redist.x64.exe), if it necessary in your environment.
+2. Install Visual Studio 2026 runtime libraries [Link](https://aka.ms/vs/17/release/vc_redist.x64.exe), if it necessary in your environment.
 3. Start LiveCloudKd.exe with local administrator privileges.
 4. Choose a Hyper-V virtual machine or local Windows for representation it's RAM as dump file.  
+5. If you see message, that hvmm driver was blocked, try use that script for temporary disabling CI Policy: [Link](https://gist.github.com/gerhart01/f5b956bb7211b1f1f3f563347fe459d6) - it was tested on host OS, but without BitLocker. 
+   Driver has kernel memory writing functions, therefore official signing is not impossible.
 
 LiveCloudKd searches WinDBG in the next steps:
 
@@ -126,7 +130,7 @@ You can view Windows Secure Kernel address space in static mode of Hyper-V VM wi
 LiveCloudKd options:
 
 ``` 
-Usage: LiveCloudKd.exe [/a {0-6}][/b][/m {0-2}][/n {0-9}][/o path][/p][/v {0-2}][/w][/y <path to directory with WinDBG>][/?]
+Usage: LiveCloudKd.exe [/a {0-6}][/b][/m {0-2}][/n {0-9}][/o path][/p][/s][/v {0-2}][/w][/y <path to directory with WinDBG>][/?]
       /a        Pre-selected action.
                    0 - Live kernel debugging
                    1 - Start EXDI plugin (WinDBG)
@@ -144,6 +148,7 @@ Usage: LiveCloudKd.exe [/a {0-6}][/b][/m {0-2}][/n {0-9}][/o path][/p][/v {0-2}]
       /n        Pre-selected number of VM.
       /o        Destination path for the output file (Action 2 - 5).
       /p        Pause partition.
+      /s 		    Skip Hyper-V guest VMs pages (for local debugging)
       /v        Verbose output.
       /w        Run WinDBG (classic) instead of kd (kd is the default).
       /y        Set path to WinDBG (classic) or WinDBG (for start EXDI plugin).
@@ -165,7 +170,8 @@ wrmsr 0x1112 0
 Project uses:
   * diStorm3 library (BSD license) by [Gil Dabah](https://x.com/_arkon): [Distorm project](https://github.com/gdabah/distorm).  
   * Singularity OS header files from Microsoft: [Project](https://www.microsoft.com/en-us/research/project/singularity/publications/), [Download link](https://github.com/lastweek/source-singularity).  
-  * and some definitions from [Hypervisor Development Kit](https://github.com/ionescu007/hdk) by [Alex Ionescu](https://x.com/aionescu).    
+  * Some definitions from [Hypervisor Development Kit](https://github.com/ionescu007/hdk) by [Alex Ionescu](https://x.com/aionescu).    
+  * WinPMEM driver example [WinPMEM](https://github.com/Velocidex/WinPmem)  
   * SAST Tools [PVS-Studio](https://pvs-studio.com/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static code analyzer for Enterprise (C, C++, C#, Go, and Java) and Web (JS and TS) development.
 
 [License to Hyper-V Memory Manager library](https://github.com/gerhart01/LiveCloudKd/blob/master/LiveCloudKdSdk/LICENSE.txt)
