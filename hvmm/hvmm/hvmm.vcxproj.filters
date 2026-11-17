@@ -24,6 +24,9 @@
     </Inf>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="map.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="vid.c">
       <Filter>Source Files</Filter>
     </ClCompile>

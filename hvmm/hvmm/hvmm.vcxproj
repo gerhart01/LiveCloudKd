@@ -182,6 +182,7 @@
   <ItemGroup>
     <ClCompile Include="hvmm.c" />
     <ClCompile Include="Injection.c" />
+    <ClCompile Include="map.c" />
     <ClCompile Include="misc.c" />
     <ClCompile Include="ProcessPatch.c" />
     <ClCompile Include="vid.c" />

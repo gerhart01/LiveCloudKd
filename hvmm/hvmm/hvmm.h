@@ -85,6 +85,37 @@
 #define IOCTL_ENABLE_VMWP_MITIGATIONS CTL_CODE(\
 	FILE_DEVICE_UNKNOWN, 0x834, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
+//
+// Mapped read mode (map.c). The codes start at 0x8A0, well above the existing ones. A client
+// sends IOCTL_QUERY_MAPPING_SUPPORT first and nothing else unless it answers
+// HVMM_MAPPING_SIGNATURE, so a map request never reaches a driver build that does not know it.
+//
+
+#define IOCTL_QUERY_MAPPING_SUPPORT CTL_CODE(\
+	FILE_DEVICE_UNKNOWN, 0x8A0, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_MAP_GPA_RANGE CTL_CODE(\
+	FILE_DEVICE_UNKNOWN, 0x8A1, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_UNMAP_GPA_RANGE CTL_CODE(\
+	FILE_DEVICE_UNKNOWN, 0x8A2, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define HVMM_MAPPING_QUERY_MAGIC   (0x714D7648UL)   // "HvMq"
+#define HVMM_MAPPING_SIGNATURE     (0x704D7648UL)   // "HvMp"
+#define HVMM_MAPPING_VERSION       (1UL)
+
+//
+// One map request never spans more than 8 MB. MDL.Size is a signed CSHORT, so
+// sizeof(MDL) + 8 bytes per page must stay below 32768 (about 16 MB of 4 KB pages).
+// The driver reports this value in the handshake and clients chunk by it.
+//
+
+#define HVMM_MAP_GPA_MAX_LENGTH (0x800000ULL)
+
+//
+// Live mappings one handle may hold. A 64 GB VM in 8 MB chunks is 8192.
+//
+
+#define HVMM_MAX_MAPPINGS_PER_HANDLE (8192UL)
+
 
 typedef PVOID MB_HANDLE;
 #define MAX_PATH          260
@@ -165,6 +196,67 @@ typedef struct _VID_INJECTION_INFO {
 	WCHAR VidAuxDllPath[MAX_PATH];
 	ULONG64 VmwpPid;
 } VID_INJECTION_INFO, *PVID_INJECTION_INFO;
+
+//
+// IOCTL_QUERY_MAPPING_SUPPORT: the handshake. Input carries HVMM_MAPPING_QUERY_MAGIC.
+//
+
+typedef struct _MAPPING_QUERY_INPUT {
+	UINT32 Magic;
+	UINT32 Reserved;
+} MAPPING_QUERY_INPUT, *PMAPPING_QUERY_INPUT;
+
+typedef struct _MAPPING_QUERY_OUTPUT {
+	UINT32 Signature;
+	UINT32 Version;
+	UINT64 MaxMapLength;
+} MAPPING_QUERY_OUTPUT, *PMAPPING_QUERY_OUTPUT;
+
+//
+// IOCTL_MAP_GPA_RANGE: map a guest physical range into the calling process, read-only, and
+// keep it mapped until IOCTL_UNMAP_GPA_RANGE or until the handle is closed. GpaStart and
+// Length are bytes and page aligned. The driver maps the longest host-backed prefix of the
+// range and reports it in MappedBytes; the caller continues from there.
+//
+
+typedef struct _MAP_GPA_RANGE_INPUT {
+	HANDLE PartitionHandle;
+	UINT64 GpaStart;
+	UINT64 Length;
+} MAP_GPA_RANGE_INPUT, *PMAP_GPA_RANGE_INPUT;
+
+typedef struct _MAP_GPA_RANGE_OUTPUT {
+	PVOID UserVa;
+	UINT64 MappedBytes;
+} MAP_GPA_RANGE_OUTPUT, *PMAP_GPA_RANGE_OUTPUT;
+
+typedef struct _UNMAP_GPA_RANGE_INPUT {
+	PVOID UserVa;
+} UNMAP_GPA_RANGE_INPUT, *PUNMAP_GPA_RANGE_INPUT;
+
+//
+// One live mapping. It holds a reference on the process it was mapped into and on the
+// vid.sys partition file object it was resolved from, for as long as it lives.
+//
+
+typedef struct _HVMM_GPA_MAPPING {
+	LIST_ENTRY Link;
+	PMDL Mdl;
+	PVOID UserVa;
+	PEPROCESS Process;
+	PFILE_OBJECT Partition;
+	UINT64 MappedBytes;
+} HVMM_GPA_MAPPING, *PHVMM_GPA_MAPPING;
+
+//
+// Per handle state, hung off FILE_OBJECT->FsContext2 by IRP_MJ_CREATE.
+//
+
+typedef struct _HVMM_FILE_CONTEXT {
+	KSPIN_LOCK Lock;
+	LIST_ENTRY MappingList;
+	ULONG MappingCount;
+} HVMM_FILE_CONTEXT, *PHVMM_FILE_CONTEXT;
 
 //
 // Internal vid.sys structures
@@ -265,6 +357,17 @@ PVOID VidPsProcessCheckWorker(PVOID pCurrentProcess, PVOID pRetAddress);
 BOOLEAN VidGetMBlockInfo(PCHAR pBuffer, ULONG len);
 BOOLEAN VidInternalReadMemory(PCHAR pBuffer, ULONG len);
 PGPAR_OBJECT VidGetGparObjectForGpa(PVM_PROCESS_CONTEXT pPartitionHandle, UINT64 GPA);
+
+//
+// map.c
+//
+
+NTSTATUS MapCreateFileContext(PFILE_OBJECT FileObject);
+VOID MapCleanupFileContext(PFILE_OBJECT FileObject);
+VOID MapFreeFileContext(PFILE_OBJECT FileObject);
+NTSTATUS MapQuerySupport(PCHAR pBuffer, ULONG inLen, ULONG outLen, PULONG pBytesReturned);
+NTSTATUS MapGpaRange(PFILE_OBJECT FileObject, PCHAR pBuffer, ULONG inLen, ULONG outLen, PULONG pBytesReturned);
+NTSTATUS UnmapGpaRange(PFILE_OBJECT FileObject, PCHAR pBuffer, ULONG inLen);
 BOOLEAN VidGetContainerMemoryBlock(PVM_PROCESS_CONTEXT pPartitionHandle, PCHAR pBuffer, ULONG len, ULONG64 GPA);
 
 //

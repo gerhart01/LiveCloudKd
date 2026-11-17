@@ -7,6 +7,7 @@ extern BOOLEAN bIsPsGetCurrentPsPatched;
 NTSTATUS DeviceControlRoutine( IN PDEVICE_OBJECT fdo, IN PIRP Irp );
 VOID     UnloadRoutine(IN PDRIVER_OBJECT DriverObject);
 NTSTATUS Create_File_IRPprocessing(IN PDEVICE_OBJECT fdo, IN PIRP Irp);
+NTSTATUS Cleanup_IRPprocessing(IN PDEVICE_OBJECT fdo, IN PIRP Irp);
 NTSTATUS Close_HandleIRPprocessing(IN PDEVICE_OBJECT fdo, IN PIRP Irp);
 NTSTATUS ReadWrite_IRPhandler(IN PDEVICE_OBJECT fdo, IN PIRP Irp);
 
@@ -46,6 +47,7 @@ NTSTATUS DriverEntry( IN PDRIVER_OBJECT DriverObject,
 
 	DriverObject->DriverUnload = UnloadRoutine;
 	DriverObject->MajorFunction[IRP_MJ_CREATE]= Create_File_IRPprocessing;
+	DriverObject->MajorFunction[IRP_MJ_CLEANUP] = Cleanup_IRPprocessing;
 	DriverObject->MajorFunction[IRP_MJ_CLOSE] = Close_HandleIRPprocessing;
 	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL]= DeviceControlRoutine;
     DriverObject->MajorFunction[IRP_MJ_READ] = ReadWrite_IRPhandler;
@@ -104,12 +106,20 @@ NTSTATUS ReadWrite_IRPhandler( IN PDEVICE_OBJECT fdo, IN PIRP Irp )
 NTSTATUS Create_File_IRPprocessing(IN PDEVICE_OBJECT fdo,IN PIRP Irp)
 {
 	UNREFERENCED_PARAMETER(fdo);
-	return CompleteIrp(Irp,STATUS_SUCCESS,0); 
+	return CompleteIrp(Irp, MapCreateFileContext(IoGetCurrentIrpStackLocation(Irp)->FileObject), 0);
+}
+
+NTSTATUS Cleanup_IRPprocessing(IN PDEVICE_OBJECT fdo,IN PIRP Irp)
+{
+	UNREFERENCED_PARAMETER(fdo);
+	MapCleanupFileContext(IoGetCurrentIrpStackLocation(Irp)->FileObject);
+	return CompleteIrp(Irp,STATUS_SUCCESS,0);
 }
 
 NTSTATUS Close_HandleIRPprocessing(IN PDEVICE_OBJECT fdo,IN PIRP Irp)
 {
 	UNREFERENCED_PARAMETER(fdo);
+	MapFreeFileContext(IoGetCurrentIrpStackLocation(Irp)->FileObject);
 	return CompleteIrp(Irp,STATUS_SUCCESS,0);
 }
 
@@ -298,6 +308,22 @@ NTSTATUS DeviceControlRoutine( IN PDEVICE_OBJECT fdo, IN PIRP Irp )
 		else {
 			BytesTxd = 0;
 		}
+		break;
+	}
+	case IOCTL_QUERY_MAPPING_SUPPORT:
+	{
+		status = MapQuerySupport(pInputBuffer, uInputBufLen, uOutBufLen, &BytesTxd);
+		break;
+	}
+	case IOCTL_MAP_GPA_RANGE:
+	{
+		status = MapGpaRange(IrpStack->FileObject, pInputBuffer, uInputBufLen, uOutBufLen, &BytesTxd);
+		break;
+	}
+	case IOCTL_UNMAP_GPA_RANGE:
+	{
+		status = UnmapGpaRange(IrpStack->FileObject, pInputBuffer, uInputBufLen);
+		BytesTxd = 0;
 		break;
 	}
 
